@@ -1,11 +1,12 @@
 "use client"
 
-import { MOCK_MODULES, MOCK_NOTIFICATIONS, MOCK_AUDIT_LOGS } from "@/lib/mock-data";
+import { MOCK_MODULES, MOCK_NOTIFICATIONS } from "@/lib/mock-data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Layers, Bell, Activity, ArrowRight, UserCheck, Server } from "lucide-react";
+import { Layers, Bell, ArrowRight, UserCheck, Server } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default function DashboardPage() {
   const activeModules = MOCK_MODULES.filter(m => m.status === 'active');
