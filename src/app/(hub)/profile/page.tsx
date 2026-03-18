@@ -21,8 +21,8 @@ export default function ProfilePage() {
     setTimeout(() => {
       setIsSaving(false);
       toast({
-        title: "Settings Saved",
-        description: "Your preferences have been updated in your hub profile.",
+        title: "Ajustes Guardados",
+        description: "Sus preferencias han sido actualizadas en su perfil de hub.",
       });
     }, 1000);
   };
@@ -30,31 +30,31 @@ export default function ProfilePage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
-        <p className="text-muted-foreground mt-1">Manage your identity and hub preferences.</p>
+        <h1 className="text-3xl font-bold tracking-tight">Ajustes de la Cuenta</h1>
+        <p className="text-muted-foreground mt-1">Gestione su identidad y preferencias de hub.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         <aside className="md:col-span-1 space-y-1">
           <Button variant="secondary" className="w-full justify-start gap-2 bg-primary/10 text-primary border-none">
-            <User className="h-4 w-4" /> Personal Info
+            <User className="h-4 w-4" /> Info Personal
           </Button>
           <Button variant="ghost" className="w-full justify-start gap-2 text-slate-600">
-            <Shield className="h-4 w-4" /> Security
+            <Shield className="h-4 w-4" /> Seguridad
           </Button>
           <Button variant="ghost" className="w-full justify-start gap-2 text-slate-600">
-            <Bell className="h-4 w-4" /> Notifications
+            <Bell className="h-4 w-4" /> Notificaciones
           </Button>
           <Button variant="ghost" className="w-full justify-start gap-2 text-slate-600">
-            <Globe className="h-4 w-4" /> Language
+            <Globe className="h-4 w-4" /> Idioma
           </Button>
         </aside>
 
         <div className="md:col-span-3 space-y-6">
           <Card className="border-none shadow-sm">
             <CardHeader>
-              <CardTitle>Public Profile</CardTitle>
-              <CardDescription>How others see you across the Terabound platform.</CardDescription>
+              <CardTitle>Perfil Público</CardTitle>
+              <CardDescription>Cómo lo ven los demás en la plataforma Terabound.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center gap-6">
@@ -63,18 +63,18 @@ export default function ProfilePage() {
                   <AvatarFallback>AD</AvatarFallback>
                 </Avatar>
                 <div className="space-y-2">
-                  <Button variant="outline" size="sm">Change Photo</Button>
-                  <p className="text-xs text-muted-foreground">JPG, GIF or PNG. 1MB max.</p>
+                  <Button variant="outline" size="sm">Cambiar Foto</Button>
+                  <p className="text-xs text-muted-foreground">JPG, GIF o PNG. Máx 1MB.</p>
                 </div>
               </div>
               <Separator />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">Full Name</Label>
+                  <Label htmlFor="firstName">Nombre Completo</Label>
                   <Input id="firstName" defaultValue="Alex Dupont" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Work Email</Label>
+                  <Label htmlFor="email">Correo del Trabajo</Label>
                   <Input id="email" defaultValue="alex.dupont@teracorp.com" disabled />
                 </div>
               </div>
@@ -83,17 +83,17 @@ export default function ProfilePage() {
 
           <Card className="border-none shadow-sm">
             <CardHeader>
-              <CardTitle>Interface Preferences</CardTitle>
-              <CardDescription>Customize the hub look and feel for your workspace.</CardDescription>
+              <CardTitle>Preferencias de Interfaz</CardTitle>
+              <CardDescription>Personalice el aspecto y comportamiento del hub.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2">
                     <Palette className="h-4 w-4 text-slate-400" />
-                    <Label className="text-sm font-semibold">Dark Mode</Label>
+                    <Label className="text-sm font-semibold">Modo Oscuro</Label>
                   </div>
-                  <p className="text-xs text-muted-foreground">Adjust the UI theme for your environment.</p>
+                  <p className="text-xs text-muted-foreground">Ajuste el tema de la interfaz para su entorno.</p>
                 </div>
                 <Switch />
               </div>
@@ -102,13 +102,13 @@ export default function ProfilePage() {
                 <div className="space-y-0.5">
                    <div className="flex items-center gap-2">
                     <Globe className="h-4 w-4 text-slate-400" />
-                    <Label className="text-sm font-semibold">System Language</Label>
+                    <Label className="text-sm font-semibold">Idioma del Sistema</Label>
                   </div>
-                  <p className="text-xs text-muted-foreground">Preferred language for navigation and alerts.</p>
+                  <p className="text-xs text-muted-foreground">Idioma preferido para navegación y alertas.</p>
                 </div>
-                <Select defaultValue="en">
+                <Select defaultValue="es">
                   <SelectTrigger className="w-[140px]">
-                    <SelectValue placeholder="Select" />
+                    <SelectValue placeholder="Seleccionar" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="en">English (US)</SelectItem>
@@ -119,25 +119,25 @@ export default function ProfilePage() {
               </div>
             </CardContent>
             <CardFooter className="bg-slate-50/50 border-t flex justify-end gap-3 px-6 py-4">
-              <Button variant="ghost">Reset Defaults</Button>
+              <Button variant="ghost">Restaurar Valores</Button>
               <Button onClick={handleSave} disabled={isSaving}>
-                {isSaving ? "Saving..." : <><Check className="mr-2 h-4 w-4" /> Save Changes</>}
+                {isSaving ? "Guardando..." : <><Check className="mr-2 h-4 w-4" /> Guardar Cambios</>}
               </Button>
             </CardFooter>
           </Card>
 
           <Card className="border-red-100 bg-red-50/20">
             <CardHeader>
-              <CardTitle className="text-red-900">Danger Zone</CardTitle>
+              <CardTitle className="text-red-900">Zona de Peligro</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-red-900">Sign out from all devices</p>
-                  <p className="text-xs text-red-700/70">Disconnect your current session across all platforms.</p>
+                  <p className="text-sm font-semibold text-red-900">Cerrar sesión en todos los dispositivos</p>
+                  <p className="text-xs text-red-700/70">Desconecte su sesión actual en todas las plataformas.</p>
                 </div>
                 <Button variant="destructive" size="sm" className="gap-2">
-                  <LogOut className="h-4 w-4" /> Logout All
+                  <LogOut className="h-4 w-4" /> Salir de Todo
                 </Button>
               </div>
             </CardContent>

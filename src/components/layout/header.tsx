@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, User, Search, Globe, ChevronDown } from "lucide-react";
+import { Bell, User, Search, Globe } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,7 @@ export function Header() {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search within TerraLink..."
+            placeholder="Buscar dentro de TerraLink..."
             className="pl-9 bg-slate-50 border-none focus-visible:ring-1 focus-visible:ring-primary w-full max-w-md h-9"
           />
         </div>
@@ -34,10 +34,10 @@ export function Header() {
       <div className="flex items-center gap-4">
         <div className="hidden md:flex flex-col items-end mr-2 text-right">
           <span className="text-sm font-semibold text-slate-900 leading-none">TerraCorp Solutions</span>
-          <span className="text-xs text-muted-foreground">Tenant: TC-00124</span>
+          <span className="text-xs text-muted-foreground">Cliente: TC-00124</span>
         </div>
         <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 mr-2">
-          TenantAdmin
+          Admin de Cliente
         </Badge>
         
         <Button variant="ghost" size="icon" className="relative" onClick={() => router.push('/notifications')}>
@@ -49,7 +49,7 @@ export function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-9 w-9 rounded-full">
               <Avatar className="h-9 w-9 border border-slate-100">
-                <AvatarImage src="https://picsum.photos/seed/user/32/32" alt="User" />
+                <AvatarImage src="https://picsum.photos/seed/user/32/32" alt="Usuario" />
                 <AvatarFallback>AD</AvatarFallback>
               </Avatar>
             </Button>
@@ -64,15 +64,15 @@ export function Header() {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => router.push('/profile')}>
               <User className="mr-2 h-4 w-4" />
-              <span>Profile Settings</span>
+              <span>Ajustes de Perfil</span>
             </DropdownMenuItem>
             <DropdownMenuItem>
               <Globe className="mr-2 h-4 w-4" />
-              <span>Switch Tenant</span>
+              <span>Cambiar Cliente</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-red-600" onClick={() => router.push('/login')}>
-              Log out
+              Cerrar sesión
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

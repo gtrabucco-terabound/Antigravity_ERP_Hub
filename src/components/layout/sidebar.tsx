@@ -16,15 +16,15 @@ import {
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-  { name: "Modules Launcher", icon: Layers, href: "/modules" },
-  { name: "Notifications", icon: Bell, href: "/notifications" },
-  { name: "Documents", icon: FileText, href: "/documents" },
-  { name: "Audit Logs", icon: Activity, href: "/activity" },
+  { name: "Tablero", icon: LayoutDashboard, href: "/dashboard" },
+  { name: "Lanzador de Módulos", icon: Layers, href: "/modules" },
+  { name: "Notificaciones", icon: Bell, href: "/notifications" },
+  { name: "Documentos", icon: FileText, href: "/documents" },
+  { name: "Registros de Auditoría", icon: Activity, href: "/activity" },
 ];
 
 const SECONDARY_NAV = [
-  { name: "Settings", icon: Settings, href: "/profile" },
+  { name: "Configuración", icon: Settings, href: "/profile" },
 ];
 
 export function AppSidebar() {
@@ -87,14 +87,14 @@ export function AppSidebar() {
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-colors"
         >
           <LogOut className="h-5 w-5" />
-          <span className="text-sm font-medium">Log out</span>
+          <span className="text-sm font-medium">Cerrar sesión</span>
         </Link>
       </div>
 
       <div className="p-4 mx-4 mb-4 bg-white/5 rounded-xl border border-white/10">
-        <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Support</p>
-        <p className="text-xs text-slate-300">Need help with Hub?</p>
-        <button className="text-xs text-accent mt-2 hover:underline">Contact System Admin</button>
+        <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Soporte</p>
+        <p className="text-xs text-slate-300">¿Necesitas ayuda con el Hub?</p>
+        <button className="text-xs text-accent mt-2 hover:underline">Contactar Admin del Sistema</button>
       </div>
     </div>
   );

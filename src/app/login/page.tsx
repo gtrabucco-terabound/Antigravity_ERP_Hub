@@ -18,13 +18,13 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate Auth Process
+    // Simular proceso de autenticación
     setTimeout(() => {
       setIsLoading(false);
       router.push('/dashboard');
       toast({
-        title: "Login Successful",
-        description: "Welcome to TerraLink Hub.",
+        title: "Inicio de sesión exitoso",
+        description: "Bienvenido a TerraLink Hub.",
       });
     }, 1500);
   };
@@ -37,34 +37,34 @@ export default function LoginPage() {
             <ShieldCheck className="text-white h-7 w-7" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">TerraLink<span className="text-primary font-normal">Hub</span></h1>
-          <p className="text-slate-500 mt-2">Terabound Modular ERP Platform</p>
+          <p className="text-slate-500 mt-2">Plataforma ERP Modular Terabound</p>
         </div>
 
         <Card className="border-slate-200 shadow-xl shadow-slate-200/50">
           <CardHeader>
-            <CardTitle>Sign in</CardTitle>
-            <CardDescription>Enter your enterprise credentials to access your tenant hub.</CardDescription>
+            <CardTitle>Iniciar sesión</CardTitle>
+            <CardDescription>Ingrese sus credenciales corporativas para acceder a su hub de cliente.</CardDescription>
           </CardHeader>
           <form onSubmit={handleLogin}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email address</Label>
-                <Input id="email" type="email" placeholder="name@company.com" required />
+                <Label htmlFor="email">Correo electrónico</Label>
+                <Input id="email" type="email" placeholder="nombre@empresa.com" required />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <button type="button" className="text-xs text-primary hover:underline">Forgot password?</button>
+                  <Label htmlFor="password">Contraseña</Label>
+                  <button type="button" className="text-xs text-primary hover:underline">¿Olvidó su contraseña?</button>
                 </div>
                 <Input id="password" type="password" required />
               </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Sign in to Hub"}
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Ingresar al Hub"}
               </Button>
               <p className="text-xs text-center text-muted-foreground px-8">
-                By signing in, you agree to the Terabound Platform Terms of Service and Privacy Policy.
+                Al iniciar sesión, acepta los Términos de Servicio y la Política de Privacidad de la plataforma Terabound.
               </p>
             </CardFooter>
           </form>
@@ -72,8 +72,8 @@ export default function LoginPage() {
 
         <div className="text-center">
           <p className="text-sm text-slate-500">
-            Tenant authentication is enforced. <br/>
-            Contact your IT administrator for access requests.
+            La autenticación de cliente es obligatoria. <br/>
+            Contacte a su administrador de TI para solicitudes de acceso.
           </p>
         </div>
       </div>

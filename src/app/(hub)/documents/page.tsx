@@ -20,12 +20,12 @@ export default function DocumentsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Document Repository</h1>
-          <p className="text-muted-foreground mt-1">Secure centralized storage for all tenant business records.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Repositorio de Documentos</h1>
+          <p className="text-muted-foreground mt-1">Almacenamiento centralizado seguro para todos los registros comerciales del cliente.</p>
         </div>
         <Button className="gap-2">
           <Upload className="h-4 w-4" />
-          Upload Document
+          Subir Documento
         </Button>
       </div>
 
@@ -33,7 +33,7 @@ export default function DocumentsPage() {
         <div className="flex gap-2 w-full md:w-auto">
           <div className="relative flex-1 md:flex-none">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input className="pl-9 w-full md:w-[300px]" placeholder="Search files..." />
+            <Input className="pl-9 w-full md:w-[300px]" placeholder="Buscar archivos..." />
           </div>
           <Button variant="outline" size="icon"><Filter className="h-4 w-4" /></Button>
         </div>
@@ -42,7 +42,7 @@ export default function DocumentsPage() {
             <Button variant="ghost" size="icon" className="rounded-none bg-slate-50"><ListIcon className="h-4 w-4" /></Button>
             <Button variant="ghost" size="icon" className="rounded-none"><Grid className="h-4 w-4" /></Button>
           </div>
-          <Badge variant="outline" className="font-normal text-muted-foreground">2 Files Total</Badge>
+          <Badge variant="outline" className="font-normal text-muted-foreground">{MOCK_DOCUMENTS.length} Archivos Totales</Badge>
         </div>
       </div>
 
@@ -50,12 +50,12 @@ export default function DocumentsPage() {
         <Table>
           <TableHeader className="bg-slate-50">
             <TableRow>
-              <TableHead className="w-[40%]">Name</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Last Modified</TableHead>
-              <TableHead>Size</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="w-[40%]">Nombre</TableHead>
+              <TableHead>Categoría</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead>Última Modificación</TableHead>
+              <TableHead>Tamaño</TableHead>
+              <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -74,7 +74,7 @@ export default function DocumentsPage() {
                 </TableCell>
                 <TableCell>
                   <Badge variant="secondary" className="capitalize text-[10px]">
-                    {doc.category}
+                    {doc.category === 'report' ? 'Reporte' : doc.category === 'contract' ? 'Contrato' : 'Otro'}
                   </Badge>
                 </TableCell>
                 <TableCell>

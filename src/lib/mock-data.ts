@@ -3,29 +3,29 @@ import { HubModule, HubNotification, HubDocument, HubAuditLog } from "@/types/hu
 export const MOCK_MODULES: HubModule[] = [
   {
     id: "m1",
-    name: "Human Resources",
+    name: "Recursos Humanos",
     slug: "rrhh",
     status: "active",
     icon: "Users",
-    description: "Manage employees, payroll, and recruitment cycles.",
+    description: "Gestione empleados, nóminas y ciclos de contratación.",
     route: "/modules/rrhh",
   },
   {
     id: "m2",
-    name: "Work Orders",
+    name: "Órdenes de Trabajo",
     slug: "ot",
     status: "active",
     icon: "ClipboardList",
-    description: "Tracking and management of technical service requests.",
+    description: "Seguimiento y gestión de solicitudes de servicio técnico.",
     route: "/modules/ot",
   },
   {
     id: "m3",
-    name: "Inventory",
+    name: "Inventario",
     slug: "stock",
     status: "active",
     icon: "Package",
-    description: "Real-time stock control and warehouse movements.",
+    description: "Control de stock en tiempo real y movimientos de almacén.",
     route: "/modules/stock",
   },
   {
@@ -34,7 +34,7 @@ export const MOCK_MODULES: HubModule[] = [
     slug: "crm",
     status: "maintenance",
     icon: "Briefcase",
-    description: "Customer relationship management and sales funnel.",
+    description: "Gestión de relaciones con clientes y embudo de ventas.",
     route: "/modules/crm",
   }
 ];
@@ -42,8 +42,8 @@ export const MOCK_MODULES: HubModule[] = [
 export const MOCK_NOTIFICATIONS: HubNotification[] = [
   {
     id: "n1",
-    title: "License Expiration",
-    body: "The 'Inventory' module license expires in 5 days.",
+    title: "Expiración de Licencia",
+    body: "La licencia del módulo 'Inventario' expira en 5 días.",
     timestamp: new Date().toISOString(),
     severity: "high",
     read: false,
@@ -51,16 +51,16 @@ export const MOCK_NOTIFICATIONS: HubNotification[] = [
   },
   {
     id: "n2",
-    title: "New Audit Entry",
-    body: "System configuration changed by admin.",
+    title: "Nueva Entrada de Auditoría",
+    body: "La configuración del sistema fue cambiada por un administrador.",
     timestamp: new Date(Date.now() - 3600000).toISOString(),
     severity: "low",
     read: true
   },
   {
     id: "n3",
-    title: "Backup Complete",
-    body: "Full database backup was successful.",
+    title: "Copia de Seguridad Completada",
+    body: "La copia de seguridad completa de la base de datos fue exitosa.",
     timestamp: new Date(Date.now() - 86400000).toISOString(),
     severity: "medium",
     read: false
@@ -70,7 +70,7 @@ export const MOCK_NOTIFICATIONS: HubNotification[] = [
 export const MOCK_DOCUMENTS: HubDocument[] = [
   {
     id: "doc1",
-    name: "Quarterly_Tax_Report.pdf",
+    name: "Reporte_Impuestos_Trimestral.pdf",
     type: "PDF",
     status: "Final",
     updatedAt: "2024-03-15",
@@ -79,9 +79,9 @@ export const MOCK_DOCUMENTS: HubDocument[] = [
   },
   {
     id: "doc2",
-    name: "Service_Contract_V2.docx",
+    name: "Contrato_Servicio_V2.docx",
     type: "DOCX",
-    status: "Draft",
+    status: "Borrador",
     updatedAt: "2024-03-20",
     size: "1.1 MB",
     category: "contract"
@@ -89,17 +89,17 @@ export const MOCK_DOCUMENTS: HubDocument[] = [
 ];
 
 export const MOCK_AUDIT_LOGS: HubAuditLog[] = [
-  "User john.doe@tenant1.com logged in from IP 192.168.1.1",
-  "Updated security settings for role 'Manager'",
-  "Exported 500 rows from Inventory module",
-  "Deleted temporary file cache in local site A",
-  "Attempted unauthorized access to sensitive financial report",
-  "Permission Update: User Sarah granted 'Auditor' role"
+  "El usuario john.doe@tenant1.com inició sesión desde la IP 192.168.1.1",
+  "Ajustes de seguridad actualizados para el rol 'Gerente'",
+  "Se exportaron 500 filas del módulo de Inventario",
+  "Caché de archivos temporales eliminada en el sitio local A",
+  "Intento de acceso no autorizado a reporte financiero sensible",
+  "Actualización de permisos: A la usuaria Sarah se le asignó el rol 'Auditor'"
 ].map((log, i) => ({
   id: `audit-${i}`,
   action: log,
-  user: "system_user",
+  user: "usuario_sistema",
   entity: "Global",
   timestamp: new Date(Date.now() - (i * 1000000)).toISOString(),
-  details: "Extended log detail content here."
+  details: "Contenido detallado del registro de auditoría aquí."
 }));

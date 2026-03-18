@@ -12,13 +12,13 @@ export default function ModulesPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Modules Launcher</h1>
-          <p className="text-muted-foreground mt-1">Access and manage your tenant-enabled modules.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Lanzador de Módulos</h1>
+          <p className="text-muted-foreground mt-1">Acceda y gestione los módulos habilitados para su cliente.</p>
         </div>
         <div className="flex gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input className="pl-9 w-[200px] md:w-[300px]" placeholder="Search modules..." />
+            <Input className="pl-9 w-[200px] md:w-[300px]" placeholder="Buscar módulos..." />
           </div>
           <Button variant="outline" size="icon"><Filter className="h-4 w-4" /></Button>
         </div>
@@ -33,7 +33,7 @@ export default function ModulesPage() {
                   <Layers className="h-6 w-6" />
                 </div>
                 <Badge variant={module.status === 'active' ? 'default' : 'secondary'}>
-                  {module.status}
+                  {module.status === 'active' ? 'Activo' : 'Mantenimiento'}
                 </Badge>
               </div>
               <CardTitle className="group-hover:text-primary transition-colors">{module.name}</CardTitle>
@@ -44,9 +44,9 @@ export default function ModulesPage() {
             <CardFooter className="pt-0">
               <Button className="w-full bg-slate-900 hover:bg-slate-800" disabled={module.status !== 'active'}>
                 {module.status === 'active' ? (
-                  <>Open Application <ExternalLink className="ml-2 h-4 w-4" /></>
+                  <>Abrir Aplicación <ExternalLink className="ml-2 h-4 w-4" /></>
                 ) : (
-                  "Temporarily Offline"
+                  "Temporalmente Fuera de Línea"
                 )}
               </Button>
             </CardFooter>
@@ -59,9 +59,9 @@ export default function ModulesPage() {
           <div className="h-16 w-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
             <Layers className="h-8 w-8 text-slate-300" />
           </div>
-          <h2 className="text-xl font-semibold text-slate-900">No Modules Enabled</h2>
-          <p className="text-slate-500 mt-2 max-w-md">Your tenant currently has no modules enabled. Please contact your administrator or the platform provider to enable features for your account.</p>
-          <Button className="mt-6">Browse Catalog</Button>
+          <h2 className="text-xl font-semibold text-slate-900">No hay módulos habilitados</h2>
+          <p className="text-slate-500 mt-2 max-w-md">Su cliente actualmente no tiene módulos habilitados. Por favor, contacte a su administrador o al proveedor de la plataforma para habilitar funciones para su cuenta.</p>
+          <Button className="mt-6">Explorar Catálogo</Button>
         </div>
       )}
     </div>

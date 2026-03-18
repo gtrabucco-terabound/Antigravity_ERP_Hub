@@ -5,11 +5,12 @@ import { MOCK_AUDIT_LOGS } from "@/lib/mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Activity, ShieldAlert, Sparkles, Loader2, Search, Info } from "lucide-react";
+import { Activity, ShieldAlert, Sparkles, Loader2, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { auditLogInsight, AuditLogInsightOutput } from "@/ai/flows/audit-log-insight-flow";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 export default function ActivityPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -23,13 +24,13 @@ export default function ActivityPage() {
       const result = await auditLogInsight({ auditLogs: logsToAnalyze });
       setInsight(result);
       toast({
-        title: "Analysis Complete",
-        description: "AI has reviewed your tenant logs for unusual activity.",
+        title: "Análisis Completado",
+        description: "La IA ha revisado los registros en busca de actividad inusual.",
       });
     } catch (error) {
       toast({
-        title: "Analysis Failed",
-        description: "There was an error processing the audit logs with AI.",
+        title: "Error en el Análisis",
+        description: "Hubo un error al procesar los registros de auditoría con IA.",
         variant: "destructive",
       });
     } finally {
@@ -41,8 +42,8 @@ export default function ActivityPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Audit & Activity</h1>
-          <p className="text-muted-foreground mt-1">Track all platform interactions and system events.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Auditoría y Actividad</h1>
+          <p className="text-muted-foreground mt-1">Rastree todas las interacciones de la plataforma y eventos del sistema.</p>
         </div>
         <Button 
           onClick={handleAIAnalysis} 
@@ -50,7 +51,7 @@ export default function ActivityPage() {
           className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2 shadow-lg shadow-indigo-200"
         >
           {isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-          AI Log Insight
+          IA: Perspectiva de Registros
         </Button>
       </div>
 
@@ -59,9 +60,9 @@ export default function ActivityPage() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-indigo-600" />
-              <CardTitle className="text-lg text-indigo-900">AI Intelligence Report</CardTitle>
+              <CardTitle className="text-lg text-indigo-900">Informe de Inteligencia de IA</CardTitle>
             </div>
-            <CardDescription className="text-indigo-700/80">Automated pattern recognition across recent tenant interactions.</CardDescription>
+            <CardDescription className="text-indigo-700/80">Reconocimiento automatizado de patrones en las interacciones recientes.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-start gap-3 p-4 bg-white rounded-lg border border-indigo-100">
@@ -72,16 +73,16 @@ export default function ActivityPage() {
               )}
               <div>
                 <p className="font-semibold text-slate-900">
-                  {insight.unusualActivityDetected ? "Potential Anomaly Detected" : "No Unusual Patterns Found"}
+                  {insight.unusualActivityDetected ? "Posible Anomalía Detectada" : "No se encontraron patrones inusuales"}
                 </p>
                 <p className="text-sm text-slate-600 mt-1 leading-relaxed">
-                  {insight.unusualActivityDescription || "Your system logs look healthy. No suspicious activities or privilege escalations were identified in this sample."}
+                  {insight.unusualActivityDescription || "Sus registros del sistema parecen saludables. No se identificaron actividades sospechosas o escaladas de privilegios en esta muestra."}
                 </p>
               </div>
             </div>
             {insight.suggestedActions && (
               <div className="space-y-2">
-                <p className="text-xs font-bold uppercase tracking-wider text-indigo-900/50">Suggested Actions</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-indigo-900/50">Acciones Sugeridas</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {insight.suggestedActions.map((action, i) => (
                     <div key={i} className="text-xs flex items-center gap-2 bg-indigo-100/50 text-indigo-900 p-2 rounded border border-indigo-200/50">
@@ -99,7 +100,7 @@ export default function ActivityPage() {
       <div className="grid grid-cols-1 gap-6">
         <div className="flex items-center gap-2 bg-white p-2 rounded-lg border shadow-sm">
           <Search className="h-4 w-4 text-muted-foreground ml-2" />
-          <Input placeholder="Filter logs by user or entity..." className="border-none focus-visible:ring-0" />
+          <Input placeholder="Filtrar registros por usuario o entidad..." className="border-none focus-visible:ring-0" />
         </div>
 
         <div className="space-y-3">
@@ -120,7 +121,7 @@ export default function ActivityPage() {
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="text-xs font-medium text-slate-500">{format(new Date(log.timestamp), 'MMM d, yyyy')}</p>
+                  <p className="text-xs font-medium text-slate-500">{format(new Date(log.timestamp), "d 'de' MMM, yyyy", { locale: es })}</p>
                   <p className="text-[10px] text-muted-foreground">{format(new Date(log.timestamp), 'HH:mm:ss')}</p>
                 </div>
               </div>
@@ -129,7 +130,7 @@ export default function ActivityPage() {
         </div>
         
         <div className="flex justify-center pt-4">
-          <Button variant="outline" size="sm">Load Older Records</Button>
+          <Button variant="outline" size="sm">Cargar Registros Anteriores</Button>
         </div>
       </div>
     </div>

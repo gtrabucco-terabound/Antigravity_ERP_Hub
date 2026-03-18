@@ -15,52 +15,52 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Welcome back, Alex</h1>
-        <p className="text-slate-500 font-medium">Here's what's happening in TerraCorp Solutions today.</p>
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Bienvenido de nuevo, Alex</h1>
+        <p className="text-slate-500 font-medium">Esto es lo que está pasando hoy en TerraCorp Solutions.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="bg-white border-none shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-semibold text-slate-500">Tenant Status</CardTitle>
+            <CardTitle className="text-sm font-semibold text-slate-500">Estado del Cliente</CardTitle>
             <Server className="h-4 w-4 text-emerald-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Operational</div>
+            <div className="text-2xl font-bold">Operacional</div>
             <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1 font-medium">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              All systems nominal
+              Todos los sistemas normales
             </p>
           </CardContent>
         </Card>
         <Card className="bg-white border-none shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-semibold text-slate-500">Enabled Modules</CardTitle>
+            <CardTitle className="text-sm font-semibold text-slate-500">Módulos Habilitados</CardTitle>
             <Layers className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeModules.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">From catalog of 12</p>
+            <p className="text-xs text-muted-foreground mt-1">De un catálogo de 12</p>
           </CardContent>
         </Card>
         <Card className="bg-white border-none shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-semibold text-slate-500">Pending Alerts</CardTitle>
+            <CardTitle className="text-sm font-semibold text-slate-500">Alertas Pendientes</CardTitle>
             <Bell className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{unreadCount}</div>
-            <p className="text-xs text-orange-600 mt-1 font-medium">Action required</p>
+            <p className="text-xs text-orange-600 mt-1 font-medium">Requiere acción</p>
           </CardContent>
         </Card>
         <Card className="bg-white border-none shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-semibold text-slate-500">Total Users</CardTitle>
+            <CardTitle className="text-sm font-semibold text-slate-500">Usuarios Totales</CardTitle>
             <UserCheck className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">42</div>
-            <p className="text-xs text-muted-foreground mt-1">5 currently online</p>
+            <p className="text-xs text-muted-foreground mt-1">5 actualmente en línea</p>
           </CardContent>
         </Card>
       </div>
@@ -69,11 +69,11 @@ export default function DashboardPage() {
         <Card className="lg:col-span-2 border-none shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Enabled Modules</CardTitle>
-              <CardDescription>Launch your active business units.</CardDescription>
+              <CardTitle>Módulos Habilitados</CardTitle>
+              <CardDescription>Inicie sus unidades de negocio activas.</CardDescription>
             </div>
             <Button variant="outline" size="sm" asChild>
-              <Link href="/modules">View Launcher</Link>
+              <Link href="/modules">Ver Lanzador</Link>
             </Button>
           </CardHeader>
           <CardContent>
@@ -85,7 +85,7 @@ export default function DashboardPage() {
                       <Layers className="h-5 w-5 text-primary" />
                     </div>
                     <Badge variant={module.status === 'active' ? 'secondary' : 'outline'} className="text-[10px]">
-                      {module.status}
+                      {module.status === 'active' ? 'Activo' : 'Mantenimiento'}
                     </Badge>
                   </div>
                   <div className="mt-4">
@@ -100,7 +100,7 @@ export default function DashboardPage() {
 
         <Card className="border-none shadow-sm">
           <CardHeader>
-            <CardTitle className="text-lg">Recent Notifications</CardTitle>
+            <CardTitle className="text-lg">Notificaciones Recientes</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {MOCK_NOTIFICATIONS.slice(0, 3).map((n) => (
@@ -118,7 +118,7 @@ export default function DashboardPage() {
               </div>
             ))}
             <Button variant="link" className="w-full text-primary" asChild>
-              <Link href="/notifications">View all notifications <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Link href="/notifications">Ver todas las notificaciones <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </CardContent>
         </Card>

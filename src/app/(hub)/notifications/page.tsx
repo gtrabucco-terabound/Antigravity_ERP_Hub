@@ -8,33 +8,35 @@ import { Bell, CheckCircle2, MoreHorizontal, Filter, Search } from "lucide-react
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 export default function NotificationsPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Notifications Center</h1>
-          <p className="text-muted-foreground mt-1">Updates across all modules for your tenant.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Centro de Notificaciones</h1>
+          <p className="text-muted-foreground mt-1">Actualizaciones de todos los módulos para su cliente.</p>
         </div>
         <Button variant="outline" className="gap-2">
           <CheckCircle2 className="h-4 w-4" />
-          Mark all as read
+          Marcar todo como leído
         </Button>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4">
         <Tabs defaultValue="all" className="flex-1">
           <TabsList>
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="unread">Unread</TabsTrigger>
-            <TabsTrigger value="urgent">High Priority</TabsTrigger>
+            <TabsTrigger value="all">Todas</TabsTrigger>
+            <TabsTrigger value="unread">No leídas</TabsTrigger>
+            <TabsTrigger value="urgent">Prioridad Alta</TabsTrigger>
           </TabsList>
         </Tabs>
         <div className="flex gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input className="pl-9 w-[200px]" placeholder="Filter by keyword..." />
+            <Input className="pl-9 w-[200px]" placeholder="Filtrar por palabra clave..." />
           </div>
           <Button variant="outline" size="icon"><Filter className="h-4 w-4" /></Button>
         </div>
@@ -57,7 +59,7 @@ export default function NotificationsPage() {
                       {n.title}
                     </h3>
                     <span className="text-[10px] text-muted-foreground bg-slate-50 px-2 py-0.5 rounded border">
-                      {format(new Date(n.timestamp), 'MMM d, h:mm a')}
+                      {format(new Date(n.timestamp), "d 'de' MMM, h:mm a", { locale: es })}
                     </span>
                   </div>
                   <p className="text-sm text-slate-500 leading-relaxed">
@@ -66,7 +68,7 @@ export default function NotificationsPage() {
                   <div className="flex items-center justify-between mt-3">
                     <div className="flex gap-2">
                       <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                        {n.severity}
+                        {n.severity === 'high' ? 'Alta' : n.severity === 'medium' ? 'Media' : 'Baja'}
                       </Badge>
                       {n.moduleId && (
                         <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-primary/5 text-primary border-primary/10">
@@ -86,8 +88,4 @@ export default function NotificationsPage() {
       </div>
     </div>
   );
-}
-
-function cn(...classes: any[]) {
-  return classes.filter(Boolean).join(' ');
 }
