@@ -23,10 +23,10 @@ export function Header() {
   const db = useFirestore();
   const [selectedTenant, setSelectedTenant] = useState<{ name: string, tenantId: string } | null>(null);
 
-  // Consulta real a Firestore para obtener los tenants (clientes)
+  // Consulta real a Firestore para obtener los tenants (clientes) globales
   const tenantsQuery = useMemoFirebase(() => {
     if (!db) return null;
-    return query(collection(db, "tenants"), limit(10));
+    return query(collection(db, "_gl_tenants"), limit(10));
   }, [db]);
 
   const { data: tenants, loading } = useCollection(tenantsQuery);
@@ -35,8 +35,8 @@ export function Header() {
   useEffect(() => {
     if (tenants && tenants.length > 0 && !selectedTenant) {
       setSelectedTenant({
-        name: tenants[0].name,
-        tenantId: tenants[0].tenantId
+        name: (tenants[0] as any).name,
+        tenantId: (tenants[0] as any).tenantId
       });
     }
   }, [tenants, selectedTenant]);
@@ -94,7 +94,7 @@ export function Header() {
             ))}
             {(!tenants || tenants.length === 0) && !loading && (
               <div className="p-4 text-center text-xs text-muted-foreground">
-                No se encontraron tenants en la colección /tenants
+                No se encontraron tenants en la colección /_gl_tenants
               </div>
             )}
           </DropdownMenuContent>

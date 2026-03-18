@@ -25,7 +25,7 @@
     "providers": ["password", "google.com"]
   },
   "firestore": {
-    "/tenants/{tenantId}": {
+    "/_gl_tenants/{tenantId}": {
       "schema": { "$ref": "#/backend/entities/Tenant" },
       "description": "Colección global de clientes del Hub."
     }
