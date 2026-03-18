@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "Tenant": {
@@ -16,6 +17,20 @@
         "status": {
           "type": "string",
           "enum": ["active", "suspended", "maintenance"]
+        },
+        "modules": {
+          "type": "array",
+          "description": "Lista de módulos habilitados para este cliente.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "status": { "type": "string" },
+              "slug": { "type": "string" }
+            }
+          }
         }
       },
       "required": ["name", "tenantId"]

@@ -1,6 +1,7 @@
+
 "use client"
 
-import { Bell, User, Search, Globe, ChevronDown, Loader2 } from "lucide-react";
+import { Bell, User, Search, ChevronDown, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,14 +17,14 @@ import {
 import { useRouter } from "next/navigation";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, limit } from "firebase/firestore";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useTenant } from "@/context/tenant-context";
 
 export function Header() {
   const router = useRouter();
   const db = useFirestore();
-  const [selectedTenant, setSelectedTenant] = useState<{ name: string, tenantId: string } | null>(null);
+  const { selectedTenant, setSelectedTenant } = useTenant();
 
-  // Consulta real a Firestore para obtener los tenants (clientes) globales
   const tenantsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, "_gl_tenants"), limit(10));
@@ -31,15 +32,18 @@ export function Header() {
 
   const { data: tenants, loading } = useCollection(tenantsQuery);
 
-  // Seleccionar el primer tenant por defecto cuando carguen los datos
+  // Seleccionar automáticamente el primero si no hay ninguno guardado
   useEffect(() => {
     if (tenants && tenants.length > 0 && !selectedTenant) {
+      const first = tenants[0] as any;
       setSelectedTenant({
-        name: (tenants[0] as any).name,
-        tenantId: (tenants[0] as any).tenantId
+        id: first.id,
+        name: first.name,
+        tenantId: first.tenantId,
+        modules: first.modules || []
       });
     }
-  }, [tenants, selectedTenant]);
+  }, [tenants, selectedTenant, setSelectedTenant]);
 
   return (
     <header className="h-16 border-b bg-white flex items-center justify-between px-6 sticky top-0 z-40">
@@ -55,14 +59,13 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-4">
-        {/* Selector de Tenant Conectado a Firestore */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex flex-col items-end h-auto py-1 px-2 hover:bg-slate-50">
               {loading ? (
                 <div className="flex items-center gap-2">
                   <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">Cargando base...</span>
+                  <span className="text-xs text-muted-foreground">Cargando...</span>
                 </div>
               ) : (
                 <>
@@ -80,23 +83,23 @@ export function Header() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64">
-            <DropdownMenuLabel>Cambiar de Cliente (Base de Datos)</DropdownMenuLabel>
+            <DropdownMenuLabel>Cambiar de Cliente</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {tenants?.map((t: any) => (
               <DropdownMenuItem 
                 key={t.id} 
-                onClick={() => setSelectedTenant({ name: t.name, tenantId: t.tenantId })}
+                onClick={() => setSelectedTenant({ 
+                  id: t.id, 
+                  name: t.name, 
+                  tenantId: t.tenantId,
+                  modules: t.modules || []
+                })}
                 className="flex justify-between items-center"
               >
                 <span>{t.name}</span>
                 <Badge variant="outline" className="text-[10px] opacity-60">{t.tenantId}</Badge>
               </DropdownMenuItem>
             ))}
-            {(!tenants || tenants.length === 0) && !loading && (
-              <div className="p-4 text-center text-xs text-muted-foreground">
-                No se encontraron tenants en la colección /_gl_tenants
-              </div>
-            )}
           </DropdownMenuContent>
         </DropdownMenu>
 
