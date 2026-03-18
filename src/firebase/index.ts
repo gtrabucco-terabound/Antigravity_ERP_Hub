@@ -5,6 +5,10 @@ import { getFirestore, Firestore } from 'firebase/firestore';
 import { getAuth, Auth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
+/**
+ * Inicializa Firebase de forma segura para Next.js (Client Side).
+ * Utiliza un patrón de singleton para evitar múltiples inicializaciones.
+ */
 export function initializeFirebase(): {
   app: FirebaseApp;
   db: Firestore;
