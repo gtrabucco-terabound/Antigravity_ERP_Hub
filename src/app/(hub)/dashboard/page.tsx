@@ -5,16 +5,27 @@ import { MOCK_NOTIFICATIONS } from "@/lib/mock-data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Layers, Bell, ArrowRight, UserCheck, Server } from "lucide-react";
+import { Layers, Bell, ArrowRight, UserCheck, Server, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useTenant } from "@/context/tenant-context";
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection, query, where, documentId } from "firebase/firestore";
 
 export default function DashboardPage() {
+  const db = useFirestore();
   const { selectedTenant } = useTenant();
   
-  // Usamos los módulos reales de la base de datos vinculados al tenant seleccionado
-  const activeModules = selectedTenant?.modules || [];
+  // IDs de módulos habilitados para el tenant seleccionado
+  const activeModuleIds = selectedTenant?.activeModules || [];
+
+  // Consulta real a _gl_modules basada en los IDs habilitados
+  const modulesQuery = useMemoFirebase(() => {
+    if (!db || !activeModuleIds.length) return null;
+    return query(collection(db, "_gl_modules"), where(documentId(), 'in', activeModuleIds));
+  }, [db, activeModuleIds]);
+
+  const { data: activeModules, loading: loadingModules } = useCollection(modulesQuery);
   const unreadCount = MOCK_NOTIFICATIONS.filter(n => !n.read).length;
 
   return (
@@ -44,8 +55,8 @@ export default function DashboardPage() {
             <Layers className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activeModules.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">Habilitados para {selectedTenant?.tenantId}</p>
+            <div className="text-2xl font-bold">{activeModuleIds.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">Habilitados para {selectedTenant?.tenantId || '---'}</p>
           </CardContent>
         </Card>
         <Card className="bg-white border-none shadow-sm">
@@ -74,15 +85,20 @@ export default function DashboardPage() {
         <Card className="lg:col-span-2 border-none shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Módulos Habilitados (Reales)</CardTitle>
-              <CardDescription>Módulos cargados directamente de Firestore para {selectedTenant?.name}.</CardDescription>
+              <CardTitle>Módulos Habilitados (Base de Datos)</CardTitle>
+              <CardDescription>Módulos cargados dinámicamente desde _gl_modules para {selectedTenant?.name}.</CardDescription>
             </div>
             <Button variant="outline" size="sm" asChild>
               <Link href="/modules">Ver Lanzador</Link>
             </Button>
           </CardHeader>
           <CardContent>
-            {activeModules.length > 0 ? (
+            {loadingModules ? (
+              <div className="flex items-center justify-center py-10">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <span className="ml-2 text-slate-500">Cargando módulos...</span>
+              </div>
+            ) : activeModules && activeModules.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {activeModules.map((module: any) => (
                   <div key={module.id} className="p-4 rounded-xl border border-slate-100 bg-slate-50 hover:border-primary/20 hover:bg-white transition-all cursor-pointer group">
@@ -90,8 +106,8 @@ export default function DashboardPage() {
                       <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center shadow-sm border border-slate-100 group-hover:border-primary/50">
                         <Layers className="h-5 w-5 text-primary" />
                       </div>
-                      <Badge variant={module.status === 'active' || module.status === 'Activo' ? 'secondary' : 'outline'} className="text-[10px]">
-                        {module.status}
+                      <Badge variant={module.status === 'active' ? 'secondary' : 'outline'} className="text-[10px]">
+                        {module.status === 'active' ? 'Activo' : 'Mantenimiento'}
                       </Badge>
                     </div>
                     <div className="mt-4">

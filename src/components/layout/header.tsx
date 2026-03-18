@@ -32,7 +32,6 @@ export function Header() {
 
   const { data: tenants, loading } = useCollection(tenantsQuery);
 
-  // Seleccionar automáticamente el primero si no hay ninguno guardado
   useEffect(() => {
     if (tenants && tenants.length > 0 && !selectedTenant) {
       const first = tenants[0] as any;
@@ -40,7 +39,7 @@ export function Header() {
         id: first.id,
         name: first.name,
         tenantId: first.tenantId,
-        modules: first.modules || []
+        activeModules: first.activeModules || []
       });
     }
   }, [tenants, selectedTenant, setSelectedTenant]);
@@ -92,7 +91,7 @@ export function Header() {
                   id: t.id, 
                   name: t.name, 
                   tenantId: t.tenantId,
-                  modules: t.modules || []
+                  activeModules: t.activeModules || []
                 })}
                 className="flex justify-between items-center"
               >

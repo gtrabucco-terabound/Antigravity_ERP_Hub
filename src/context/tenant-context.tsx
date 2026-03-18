@@ -7,7 +7,7 @@ interface Tenant {
   id: string;
   name: string;
   tenantId: string;
-  modules?: any[];
+  activeModules?: string[];
 }
 
 interface TenantContextProps {
@@ -20,7 +20,6 @@ const TenantContext = createContext<TenantContextProps | undefined>(undefined);
 export function TenantProvider({ children }: { children: ReactNode }) {
   const [selectedTenant, setSelectedTenantState] = useState<Tenant | null>(null);
 
-  // Persistir selección en localStorage para navegación entre páginas
   useEffect(() => {
     const saved = localStorage.getItem('selected_tenant');
     if (saved) {

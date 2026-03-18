@@ -18,22 +18,27 @@
           "type": "string",
           "enum": ["active", "suspended", "maintenance"]
         },
-        "modules": {
+        "activeModules": {
           "type": "array",
-          "description": "Lista de módulos habilitados para este cliente.",
+          "description": "Lista de IDs de módulos habilitados para este cliente.",
           "items": {
-            "type": "object",
-            "properties": {
-              "id": { "type": "string" },
-              "name": { "type": "string" },
-              "description": { "type": "string" },
-              "status": { "type": "string" },
-              "slug": { "type": "string" }
-            }
+            "type": "string"
           }
         }
       },
       "required": ["name", "tenantId"]
+    },
+    "Module": {
+      "title": "Module",
+      "description": "Un módulo o aplicación dentro del ecosistema Terabound.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string" },
+        "slug": { "type": "string" },
+        "icon": { "type": "string" }
+      }
     }
   },
   "auth": {
@@ -43,6 +48,10 @@
     "/_gl_tenants/{tenantId}": {
       "schema": { "$ref": "#/backend/entities/Tenant" },
       "description": "Colección global de clientes del Hub."
+    },
+    "/_gl_modules/{moduleId}": {
+      "schema": { "$ref": "#/backend/entities/Module" },
+      "description": "Colección global de definiciones de módulos."
     }
   }
 }
