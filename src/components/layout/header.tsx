@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, User, Search, Globe } from "lucide-react";
+import { Bell, User, Search, Globe, ChevronDown, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,9 +14,32 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection, query, limit } from "firebase/firestore";
+import { useState, useEffect } from "react";
 
 export function Header() {
   const router = useRouter();
+  const db = useFirestore();
+  const [selectedTenant, setSelectedTenant] = useState<{ name: string, tenantId: string } | null>(null);
+
+  // Consulta real a Firestore para obtener los tenants (clientes)
+  const tenantsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, "tenants"), limit(10));
+  }, [db]);
+
+  const { data: tenants, loading } = useCollection(tenantsQuery);
+
+  // Seleccionar el primer tenant por defecto cuando carguen los datos
+  useEffect(() => {
+    if (tenants && tenants.length > 0 && !selectedTenant) {
+      setSelectedTenant({
+        name: tenants[0].name,
+        tenantId: tenants[0].tenantId
+      });
+    }
+  }, [tenants, selectedTenant]);
 
   return (
     <header className="h-16 border-b bg-white flex items-center justify-between px-6 sticky top-0 z-40">
@@ -32,11 +55,52 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="hidden md:flex flex-col items-end mr-2 text-right">
-          <span className="text-sm font-semibold text-slate-900 leading-none">TerraCorp Solutions</span>
-          <span className="text-xs text-muted-foreground">Cliente: TC-00124</span>
-        </div>
-        <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 mr-2">
+        {/* Selector de Tenant Conectado a Firestore */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="flex flex-col items-end h-auto py-1 px-2 hover:bg-slate-50">
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">Cargando base...</span>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm font-semibold text-slate-900 leading-none">
+                      {selectedTenant?.name || "Seleccionar Cliente"}
+                    </span>
+                    <ChevronDown className="h-3 w-3 text-slate-400" />
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">
+                    ID: {selectedTenant?.tenantId || "---"}
+                  </span>
+                </>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-64">
+            <DropdownMenuLabel>Cambiar de Cliente (Base de Datos)</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {tenants?.map((t: any) => (
+              <DropdownMenuItem 
+                key={t.id} 
+                onClick={() => setSelectedTenant({ name: t.name, tenantId: t.tenantId })}
+                className="flex justify-between items-center"
+              >
+                <span>{t.name}</span>
+                <Badge variant="outline" className="text-[10px] opacity-60">{t.tenantId}</Badge>
+              </DropdownMenuItem>
+            ))}
+            {(!tenants || tenants.length === 0) && !loading && (
+              <div className="p-4 text-center text-xs text-muted-foreground">
+                No se encontraron tenants en la colección /tenants
+              </div>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 hidden sm:flex">
           Admin de Cliente
         </Badge>
         
@@ -65,10 +129,6 @@ export function Header() {
             <DropdownMenuItem onClick={() => router.push('/profile')}>
               <User className="mr-2 h-4 w-4" />
               <span>Ajustes de Perfil</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Globe className="mr-2 h-4 w-4" />
-              <span>Cambiar Cliente</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-red-600" onClick={() => router.push('/login')}>

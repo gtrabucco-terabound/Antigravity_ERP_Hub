@@ -1,0 +1,33 @@
+{
+  "entities": {
+    "Tenant": {
+      "title": "Tenant",
+      "description": "Un cliente corporativo o unidad de negocio en Terabound.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Nombre comercial del cliente."
+        },
+        "tenantId": {
+          "type": "string",
+          "description": "Identificador único (ej: TC-00124)."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "suspended", "maintenance"]
+        }
+      },
+      "required": ["name", "tenantId"]
+    }
+  },
+  "auth": {
+    "providers": ["password", "google.com"]
+  },
+  "firestore": {
+    "/tenants/{tenantId}": {
+      "schema": { "$ref": "#/backend/entities/Tenant" },
+      "description": "Colección global de clientes del Hub."
+    }
+  }
+}
