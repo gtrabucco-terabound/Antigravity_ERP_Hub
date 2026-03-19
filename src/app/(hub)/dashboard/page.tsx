@@ -1,4 +1,3 @@
-
 "use client"
 
 import { MOCK_NOTIFICATIONS } from "@/lib/mock-data";
@@ -11,10 +10,12 @@ import { cn } from "@/lib/utils";
 import { useTenant } from "@/context/tenant-context";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, where, documentId } from "firebase/firestore";
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
   const db = useFirestore();
   const { selectedTenant } = useTenant();
+  const router = useRouter();
   
   // IDs de módulos habilitados para el tenant seleccionado
   const activeModuleIds = selectedTenant?.activeModules || [];
@@ -101,7 +102,11 @@ export default function DashboardPage() {
             ) : activeModules && activeModules.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {activeModules.map((module: any) => (
-                  <div key={module.id} className="p-4 rounded-xl border border-slate-100 bg-slate-50 hover:border-primary/20 hover:bg-white transition-all cursor-pointer group">
+                  <div 
+                    key={module.id} 
+                    onClick={() => router.push(`/view/${module.id}`)}
+                    className="p-4 rounded-xl border border-slate-100 bg-slate-50 hover:border-primary/20 hover:bg-white transition-all cursor-pointer group"
+                  >
                     <div className="flex items-start justify-between">
                       <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center shadow-sm border border-slate-100 group-hover:border-primary/50">
                         <Layers className="h-5 w-5 text-primary" />
