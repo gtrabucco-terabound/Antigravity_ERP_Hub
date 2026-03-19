@@ -14,10 +14,8 @@ export default function ModuleViewPage() {
   const { moduleId } = useParams();
   const db = useFirestore();
   const router = useRouter();
-  const { user } = useUser();
   const { selectedTenant } = useTenant();
   const [iframeLoading, setIframeLoading] = useState(true);
-  const [finalUrl, setFinalUrl] = useState<string>("");
   const [showSlowWarning, setShowSlowWarning] = useState(false);
 
   const moduleRef = useMemoFirebase(() => {
@@ -26,6 +24,8 @@ export default function ModuleViewPage() {
   }, [db, moduleId]);
 
   const { data: module, loading: loadingData, error } = useDoc(moduleRef);
+
+  const finalUrl = (module as any)?.remoteUrl || "";
 
   // Monitorizar carga lenta del Iframe
   useEffect(() => {
@@ -40,29 +40,6 @@ export default function ModuleViewPage() {
     return () => clearTimeout(timer);
   }, [iframeLoading, finalUrl]);
 
-  // Construir la URL con el contexto del Tenant para el SSO
-  useEffect(() => {
-    if (module && selectedTenant && user) {
-      // Priorizar remoteUrl de la base de datos
-      const baseUrl = (module as any).remoteUrl;
-      
-      if (!baseUrl) {
-        console.warn("El módulo no tiene una URL configurada en Firestore.");
-        return;
-      }
-
-      try {
-        const urlWithContext = new URL(baseUrl);
-        urlWithContext.searchParams.append("tenantId", selectedTenant.tenantId);
-        urlWithContext.searchParams.append("hubOrigin", window.location.origin);
-        urlWithContext.searchParams.append("uid", user.uid);
-        setFinalUrl(urlWithContext.toString());
-      } catch (e) {
-        console.error("URL de módulo inválida:", baseUrl);
-      }
-    }
-  }, [module, selectedTenant, user]);
-
   if (loadingData) {
     return (
       <div className="flex flex-col items-center justify-center h-[70vh] gap-4">
@@ -72,14 +49,14 @@ export default function ModuleViewPage() {
     );
   }
 
-  if (error || !module) {
+  if (error || !module || !finalUrl) {
     return (
       <div className="flex flex-col items-center justify-center h-[70vh] gap-4 text-center px-4">
         <div className="bg-red-50 p-4 rounded-full">
           <ShieldAlert className="h-12 w-12 text-red-500" />
         </div>
-        <h2 className="text-2xl font-bold text-slate-900">Módulo no encontrado</h2>
-        <p className="text-slate-500 max-w-md">No se pudo cargar el módulo solicitado o no tiene permisos para acceder a él.</p>
+        <h2 className="text-2xl font-bold text-slate-900">Módulo no disponible</h2>
+        <p className="text-slate-500 max-w-md">No se encontró una URL válida para este módulo en la base de datos global.</p>
         <Button onClick={() => router.push('/dashboard')}>Volver al Tablero</Button>
       </div>
     );
@@ -98,7 +75,7 @@ export default function ModuleViewPage() {
           <Badge variant="secondary" className="text-[10px] h-5">ID: {module.id}</Badge>
           {selectedTenant && (
             <Badge variant="outline" className="text-[10px] h-5 border-emerald-200 text-emerald-700 bg-emerald-50 gap-1">
-              <UserCheck className="h-3 w-3" /> Contexto: {selectedTenant.name}
+              <UserCheck className="h-3 w-3" /> Cliente: {selectedTenant.name}
             </Badge>
           )}
         </div>
@@ -109,7 +86,6 @@ export default function ModuleViewPage() {
             size="icon" 
             className="h-8 w-8" 
             title="Recargar Módulo"
-            disabled={!finalUrl}
             onClick={() => {
               setIframeLoading(true);
               setShowSlowWarning(false);
@@ -123,16 +99,11 @@ export default function ModuleViewPage() {
             variant="default" 
             size="sm" 
             className="h-8 gap-2 text-xs shadow-sm bg-primary"
-            disabled={!finalUrl}
-            asChild={!!finalUrl}
+            asChild
           >
-            {finalUrl ? (
-              <a href={finalUrl} target="_blank" rel="noopener noreferrer">
-                Abrir en pestaña nueva <ExternalLink className="h-3 w-3" />
-              </a>
-            ) : (
-              <>Preparando enlace... <Loader2 className="h-3 w-3 animate-spin" /></>
-            )}
+            <a href={finalUrl} target="_blank" rel="noopener noreferrer">
+              Abrir en pestaña nueva <ExternalLink className="h-3 w-3" />
+            </a>
           </Button>
         </div>
       </div>
@@ -145,7 +116,7 @@ export default function ModuleViewPage() {
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
               <div>
                 <p className="text-sm font-semibold text-slate-800">Cargando aplicación externa...</p>
-                <p className="text-xs text-slate-500 mt-1">Conectando de forma segura con los servicios del módulo.</p>
+                <p className="text-xs text-slate-500 mt-1">Accediendo a la dirección remota almacenada en el Hub.</p>
               </div>
               
               {showSlowWarning && (
@@ -155,7 +126,7 @@ export default function ModuleViewPage() {
                     <div>
                       <p className="text-xs font-bold text-amber-900">¿Demora excesiva?</p>
                       <p className="text-[10px] text-amber-700 mt-1 leading-tight">
-                        El servidor del módulo podría estar tardando en responder. Prueba abrirlo directamente.
+                        El servidor remoto está tardando en responder. Puedes intentar abrirlo directamente.
                       </p>
                     </div>
                   </div>
@@ -163,14 +134,9 @@ export default function ModuleViewPage() {
                     variant="outline" 
                     size="sm" 
                     className="w-full mt-3 h-7 text-[10px] bg-white border-amber-200 text-amber-800 hover:bg-amber-100" 
-                    disabled={!finalUrl}
-                    asChild={!!finalUrl}
+                    asChild
                   >
-                    {finalUrl ? (
-                      <a href={finalUrl} target="_blank" rel="noopener noreferrer">Acceder en pestaña externa</a>
-                    ) : (
-                      <span>Generando acceso...</span>
-                    )}
+                    <a href={finalUrl} target="_blank" rel="noopener noreferrer">Acceder en pestaña externa</a>
                   </Button>
                 </div>
               )}
@@ -178,31 +144,25 @@ export default function ModuleViewPage() {
           </div>
         )}
 
-        {/* Aviso de seguridad/carga */}
+        {/* Aviso de contexto */}
         <div className="p-2.5 bg-blue-50 border-b border-blue-100">
           <div className="flex items-center gap-2 max-w-5xl mx-auto">
             <AlertCircle className="h-3.5 w-3.5 text-blue-600 shrink-0" />
             <p className="text-[10px] text-blue-800">
-              <strong>Contexto Activo:</strong> Tu identidad y el cliente <strong>{selectedTenant?.name}</strong> están sincronizados con este módulo mediante SSO.
+              Estás visualizando el módulo bajo el contexto del cliente <strong>{selectedTenant?.name}</strong>.
             </p>
           </div>
         </div>
 
         <div className="flex-1 relative">
-          {finalUrl ? (
-            <iframe
-              id="module-iframe"
-              src={finalUrl}
-              className="w-full h-full border-none"
-              onLoad={() => setIframeLoading(false)}
-              title={(module as any).name}
-              allow="geolocation; microphone; camera; midi; encrypted-media; clipboard-read; clipboard-write;"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-400 text-sm">
-              Esperando configuración del módulo...
-            </div>
-          )}
+          <iframe
+            id="module-iframe"
+            src={finalUrl}
+            className="w-full h-full border-none"
+            onLoad={() => setIframeLoading(false)}
+            title={(module as any).name}
+            allow="geolocation; microphone; camera; midi; encrypted-media; clipboard-read; clipboard-write;"
+          />
         </div>
       </div>
     </div>
