@@ -4,7 +4,7 @@
 import { useDoc, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, ArrowLeft, ExternalLink, RefreshCw, ShieldAlert, AlertCircle, UserCheck } from "lucide-react";
+import { Loader2, ArrowLeft, ExternalLink, RefreshCw, ShieldAlert, AlertCircle, UserCheck, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ export default function ModuleViewPage() {
   const { selectedTenant } = useTenant();
   const [iframeLoading, setIframeLoading] = useState(true);
   const [finalUrl, setFinalUrl] = useState<string>("");
+  const [showSlowWarning, setShowSlowWarning] = useState(false);
 
   const moduleRef = useMemoFirebase(() => {
     if (!db || !moduleId) return null;
@@ -26,18 +27,32 @@ export default function ModuleViewPage() {
 
   const { data: module, loading: loadingData, error } = useDoc(moduleRef);
 
+  // Monitorizar carga lenta
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (iframeLoading && finalUrl) {
+      timer = setTimeout(() => {
+        setShowSlowWarning(true);
+      }, 7000); // 7 segundos de espera antes de sugerir apertura externa
+    } else {
+      setShowSlowWarning(false);
+    }
+    return () => clearTimeout(timer);
+  }, [iframeLoading, finalUrl]);
+
   // Construir la URL con el contexto del Tenant para el SSO
   useEffect(() => {
     if (module && selectedTenant && user) {
       const baseUrl = (module as any).remoteUrl || "https://terabound-demo-module.web.app";
-      // Añadimos parámetros de contexto para que el módulo sepa quién lo llama
-      const urlWithContext = new URL(baseUrl);
-      urlWithContext.searchParams.append("tenantId", selectedTenant.tenantId);
-      urlWithContext.searchParams.append("hubOrigin", window.location.origin);
-      // Nota: En producción, aquí pasaríamos un token de corta duración en lugar del UID directamente
-      urlWithContext.searchParams.append("uid", user.uid);
-      
-      setFinalUrl(urlWithContext.toString());
+      try {
+        const urlWithContext = new URL(baseUrl);
+        urlWithContext.searchParams.append("tenantId", selectedTenant.tenantId);
+        urlWithContext.searchParams.append("hubOrigin", window.location.origin);
+        urlWithContext.searchParams.append("uid", user.uid);
+        setFinalUrl(urlWithContext.toString());
+      } catch (e) {
+        console.error("URL de módulo inválida", baseUrl);
+      }
     }
   }, [module, selectedTenant, user]);
 
@@ -89,6 +104,7 @@ export default function ModuleViewPage() {
             title="Recargar Módulo"
             onClick={() => {
               setIframeLoading(true);
+              setShowSlowWarning(false);
               const iframe = document.getElementById('module-iframe') as HTMLIFrameElement;
               if (iframe) iframe.src = finalUrl;
             }}
@@ -96,9 +112,9 @@ export default function ModuleViewPage() {
             <RefreshCw className={iframeLoading ? "h-3.5 w-3.5 animate-spin" : "h-3.5 w-3.5"} />
           </Button>
           <Button 
-            variant="outline" 
+            variant="default" 
             size="sm" 
-            className="h-8 gap-2 text-xs"
+            className="h-8 gap-2 text-xs shadow-sm bg-primary"
             asChild
           >
             <a href={finalUrl} target="_blank" rel="noopener noreferrer">
@@ -111,26 +127,41 @@ export default function ModuleViewPage() {
       {/* Area del Iframe */}
       <div className="flex-1 relative bg-slate-100/50 overflow-hidden flex flex-col">
         {iframeLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-20">
-            <div className="flex flex-col items-center gap-2">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-xs text-slate-400">Cargando aplicación externa...</p>
+          <div className="absolute inset-0 flex items-center justify-center bg-white/90 z-20">
+            <div className="flex flex-col items-center gap-4 text-center max-w-sm px-6">
+              <Loader2 className="h-10 w-10 animate-spin text-primary" />
+              <div>
+                <p className="text-sm font-semibold text-slate-800">Cargando aplicación externa...</p>
+                <p className="text-xs text-slate-500 mt-1">Conectando de forma segura con los servicios del módulo.</p>
+              </div>
+              
+              {showSlowWarning && (
+                <div className="mt-4 p-4 bg-amber-50 rounded-xl border border-amber-100 animate-in fade-in slide-in-from-bottom-2">
+                  <div className="flex gap-3 text-left">
+                    <Clock className="h-5 w-5 text-amber-600 shrink-0" />
+                    <div>
+                      <p className="text-xs font-bold text-amber-900">¿Demora excesiva?</p>
+                      <p className="text-[10px] text-amber-700 mt-1 leading-tight">
+                        El servidor del módulo podría estar tardando en responder. Prueba abrirlo directamente.
+                      </p>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" className="w-full mt-3 h-7 text-[10px] bg-white border-amber-200 text-amber-800 hover:bg-amber-100" asChild>
+                    <a href={finalUrl} target="_blank" rel="noopener noreferrer">Acceder en pestaña externa</a>
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         )}
 
         {/* Aviso de seguridad/carga */}
-        <div className="p-3 bg-blue-50 border-b border-blue-100">
-          <div className="flex items-start gap-3 max-w-5xl mx-auto">
-            <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5" />
-            <div className="space-y-1">
-              <p className="text-[11px] text-blue-800 leading-tight">
-                <strong>Modo Ecosistema Activo:</strong> El Hub está inyectando tu identidad y el contexto del cliente <strong>{selectedTenant?.name}</strong> en este módulo.
-              </p>
-              <p className="text-[10px] text-blue-600/80">
-                Si el módulo no carga debido a políticas de seguridad (X-Frame), usa el botón <strong>"Abrir en pestaña nueva"</strong> arriba.
-              </p>
-            </div>
+        <div className="p-2.5 bg-blue-50 border-b border-blue-100">
+          <div className="flex items-center gap-2 max-w-5xl mx-auto">
+            <AlertCircle className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+            <p className="text-[10px] text-blue-800">
+              <strong>Contexto Activo:</strong> Tu identidad y el cliente <strong>{selectedTenant?.name}</strong> están sincronizados con este módulo mediante SSO.
+            </p>
           </div>
         </div>
 
