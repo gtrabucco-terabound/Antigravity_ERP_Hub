@@ -27,13 +27,13 @@ export default function ModuleViewPage() {
 
   const { data: module, loading: loadingData, error } = useDoc(moduleRef);
 
-  // Monitorizar carga lenta
+  // Monitorizar carga lenta del Iframe
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (iframeLoading && finalUrl) {
       timer = setTimeout(() => {
         setShowSlowWarning(true);
-      }, 7000); // 7 segundos de espera antes de sugerir apertura externa
+      }, 7000); 
     } else {
       setShowSlowWarning(false);
     }
@@ -43,7 +43,14 @@ export default function ModuleViewPage() {
   // Construir la URL con el contexto del Tenant para el SSO
   useEffect(() => {
     if (module && selectedTenant && user) {
-      const baseUrl = (module as any).remoteUrl || "https://terabound-demo-module.web.app";
+      // Priorizar remoteUrl de la base de datos
+      const baseUrl = (module as any).remoteUrl;
+      
+      if (!baseUrl) {
+        console.warn("El módulo no tiene una URL configurada en Firestore.");
+        return;
+      }
+
       try {
         const urlWithContext = new URL(baseUrl);
         urlWithContext.searchParams.append("tenantId", selectedTenant.tenantId);
@@ -51,7 +58,7 @@ export default function ModuleViewPage() {
         urlWithContext.searchParams.append("uid", user.uid);
         setFinalUrl(urlWithContext.toString());
       } catch (e) {
-        console.error("URL de módulo inválida", baseUrl);
+        console.error("URL de módulo inválida:", baseUrl);
       }
     }
   }, [module, selectedTenant, user]);
@@ -102,6 +109,7 @@ export default function ModuleViewPage() {
             size="icon" 
             className="h-8 w-8" 
             title="Recargar Módulo"
+            disabled={!finalUrl}
             onClick={() => {
               setIframeLoading(true);
               setShowSlowWarning(false);
@@ -115,11 +123,16 @@ export default function ModuleViewPage() {
             variant="default" 
             size="sm" 
             className="h-8 gap-2 text-xs shadow-sm bg-primary"
-            asChild
+            disabled={!finalUrl}
+            asChild={!!finalUrl}
           >
-            <a href={finalUrl} target="_blank" rel="noopener noreferrer">
-              Abrir en pestaña nueva <ExternalLink className="h-3 w-3" />
-            </a>
+            {finalUrl ? (
+              <a href={finalUrl} target="_blank" rel="noopener noreferrer">
+                Abrir en pestaña nueva <ExternalLink className="h-3 w-3" />
+              </a>
+            ) : (
+              <>Preparando enlace... <Loader2 className="h-3 w-3 animate-spin" /></>
+            )}
           </Button>
         </div>
       </div>
@@ -146,8 +159,18 @@ export default function ModuleViewPage() {
                       </p>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm" className="w-full mt-3 h-7 text-[10px] bg-white border-amber-200 text-amber-800 hover:bg-amber-100" asChild>
-                    <a href={finalUrl} target="_blank" rel="noopener noreferrer">Acceder en pestaña externa</a>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full mt-3 h-7 text-[10px] bg-white border-amber-200 text-amber-800 hover:bg-amber-100" 
+                    disabled={!finalUrl}
+                    asChild={!!finalUrl}
+                  >
+                    {finalUrl ? (
+                      <a href={finalUrl} target="_blank" rel="noopener noreferrer">Acceder en pestaña externa</a>
+                    ) : (
+                      <span>Generando acceso...</span>
+                    )}
                   </Button>
                 </div>
               )}
@@ -166,7 +189,7 @@ export default function ModuleViewPage() {
         </div>
 
         <div className="flex-1 relative">
-          {finalUrl && (
+          {finalUrl ? (
             <iframe
               id="module-iframe"
               src={finalUrl}
@@ -175,6 +198,10 @@ export default function ModuleViewPage() {
               title={(module as any).name}
               allow="geolocation; microphone; camera; midi; encrypted-media; clipboard-read; clipboard-write;"
             />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-400 text-sm">
+              Esperando configuración del módulo...
+            </div>
           )}
         </div>
       </div>
