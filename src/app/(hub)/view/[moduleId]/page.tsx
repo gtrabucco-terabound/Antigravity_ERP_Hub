@@ -3,10 +3,11 @@
 import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, ArrowLeft, ExternalLink, RefreshCw, ShieldAlert } from "lucide-react";
+import { Loader2, ArrowLeft, ExternalLink, RefreshCw, ShieldAlert, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function ModuleViewPage() {
   const { moduleId } = useParams();
@@ -51,7 +52,7 @@ export default function ModuleViewPage() {
       <div className="h-12 bg-white border-b px-4 flex items-center justify-between shrink-0 shadow-sm z-10">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" onClick={() => router.back()} className="h-8 gap-1">
-            <ArrowLeft className="h-4 w-4" /> Atrat
+            <ArrowLeft className="h-4 w-4" /> Volver
           </Button>
           <div className="h-4 w-px bg-slate-200 mx-1" />
           <h2 className="text-sm font-semibold text-slate-700">{(module as any).name}</h2>
@@ -63,25 +64,30 @@ export default function ModuleViewPage() {
             variant="ghost" 
             size="icon" 
             className="h-8 w-8" 
-            onClick={() => setIframeLoading(true)}
+            title="Recargar Módulo"
+            onClick={() => {
+              setIframeLoading(true);
+              const iframe = document.getElementById('module-iframe') as HTMLIFrameElement;
+              if (iframe) iframe.src = remoteUrl;
+            }}
           >
             <RefreshCw className={iframeLoading ? "h-3.5 w-3.5 animate-spin" : "h-3.5 w-3.5"} />
           </Button>
           <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8"
+            variant="outline" 
+            size="sm" 
+            className="h-8 gap-2 text-xs"
             asChild
           >
             <a href={remoteUrl} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="h-3.5 w-3.5" />
+              Abrir en pestaña nueva <ExternalLink className="h-3 w-3" />
             </a>
           </Button>
         </div>
       </div>
 
       {/* Area del Iframe */}
-      <div className="flex-1 relative bg-slate-50 overflow-hidden">
+      <div className="flex-1 relative bg-slate-100/50 overflow-hidden flex flex-col">
         {iframeLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-20">
             <div className="flex flex-col items-center gap-2">
@@ -90,13 +96,27 @@ export default function ModuleViewPage() {
             </div>
           </div>
         )}
-        <iframe
-          src={remoteUrl}
-          className="w-full h-full border-none"
-          onLoad={() => setIframeLoading(false)}
-          title={(module as any).name}
-          allow="geolocation; microphone; camera; midi; encrypted-media;"
-        />
+
+        {/* Aviso de seguridad/carga */}
+        <div className="p-4 bg-amber-50 border-b border-amber-100">
+          <div className="flex items-start gap-3 max-w-4xl">
+            <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5" />
+            <p className="text-[11px] text-amber-800 leading-tight">
+              <strong>Nota de Integración:</strong> Si la aplicación no carga o muestra un error de conexión, es posible que el módulo bloquee el acceso mediante marcos por seguridad. En ese caso, utiliza el botón <strong>"Abrir en pestaña nueva"</strong>.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex-1 relative">
+          <iframe
+            id="module-iframe"
+            src={remoteUrl}
+            className="w-full h-full border-none"
+            onLoad={() => setIframeLoading(false)}
+            title={(module as any).name}
+            allow="geolocation; microphone; camera; midi; encrypted-media; clipboard-read; clipboard-write;"
+          />
+        </div>
       </div>
     </div>
   );
