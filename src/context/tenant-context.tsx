@@ -1,13 +1,18 @@
 
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
+import { useDoc } from '@/firebase/firestore/use-doc';
+import { useFirestore } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 interface Tenant {
   id: string;
   name: string;
   tenantId: string;
   activeModules?: string[];
+  plan?: string;
+  status?: string;
 }
 
 interface TenantContextProps {
@@ -18,24 +23,34 @@ interface TenantContextProps {
 const TenantContext = createContext<TenantContextProps | undefined>(undefined);
 
 export function TenantProvider({ children }: { children: ReactNode }) {
-  const [selectedTenant, setSelectedTenantState] = useState<Tenant | null>(null);
+  const db = useFirestore();
+  const [selectedTenantStub, setSelectedTenantStub] = useState<{ id: string } | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem('selected_tenant');
     if (saved) {
       try {
-        setSelectedTenantState(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        if (parsed.id) setSelectedTenantStub({ id: parsed.id });
       } catch (e) {
         console.error("Error al cargar tenant guardado");
       }
     }
   }, []);
 
+  const tenantRef = useMemo(() => {
+    if (!db || !selectedTenantStub?.id) return null;
+    return doc(db, "_gl_tenants", selectedTenantStub.id);
+  }, [db, selectedTenantStub?.id]);
+
+  const { data: selectedTenant } = useDoc<Tenant>(tenantRef as any);
+
   const setSelectedTenant = (tenant: Tenant | null) => {
-    setSelectedTenantState(tenant);
     if (tenant) {
-      localStorage.setItem('selected_tenant', JSON.stringify(tenant));
+      setSelectedTenantStub({ id: tenant.id });
+      localStorage.setItem('selected_tenant', JSON.stringify({ id: tenant.id, name: tenant.name, tenantId: tenant.tenantId }));
     } else {
+      setSelectedTenantStub(null);
       localStorage.removeItem('selected_tenant');
     }
   };

@@ -9,6 +9,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useTenant } from "@/context/tenant-context";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { useMembership } from "@/firebase/auth/use-membership";
 import { collection, query, where, documentId } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
@@ -26,7 +27,25 @@ export default function DashboardPage() {
     return query(collection(db, "_gl_modules"), where(documentId(), 'in', activeModuleIds));
   }, [db, activeModuleIds]);
 
+  const { membership } = useMembership();
+  const userRole = membership?.role || "OPERATIVE";
+
+  // Mapeo de permisos (ID -> Roles permitidos)
+  // Nota: En una fase avanzada esto vendría de Firestore, pero por ahora seguimos la lógica del Sidebar
+  const MODULE_PERMISSIONS: Record<string, string[]> = {
+    "mod_crm": ["ADMIN_OWNER"],
+    "mod_inv": ["ADMIN_OWNER", "SUPERVISOR"],
+    "mod_fin": ["ADMIN_OWNER", "SUPERVISOR"],
+    "9dRWiNsBBLbd1uL3KQk3": ["ADMIN_OWNER", "SUPERVISOR", "OPERATIVE"]
+  };
+
   const { data: activeModules, loading: loadingModules } = useCollection(modulesQuery);
+  
+  // Filtrado por Rol (RBAC Técnico)
+  const filteredModules = activeModules?.filter(m => 
+    MODULE_PERMISSIONS[m.id]?.includes(userRole)
+  ) || [];
+
   const unreadCount = MOCK_NOTIFICATIONS.filter(n => !n.read).length;
 
   return (
@@ -99,9 +118,9 @@ export default function DashboardPage() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 <span className="ml-2 text-slate-500">Cargando módulos...</span>
               </div>
-            ) : activeModules && activeModules.length > 0 ? (
+            ) : filteredModules.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {activeModules.map((module: any) => (
+                {filteredModules.map((module: any) => (
                   <div 
                     key={module.id} 
                     onClick={() => router.push(`/view/${module.id}`)}
