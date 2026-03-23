@@ -65,9 +65,9 @@ export default function ModulesPage() {
               </CardHeader>
               <CardFooter className="pt-0">
                 <Button 
-                  onClick={() => router.push(`/view/${module.id}`)}
+                  onClick={() => window.open(module.remoteUrl || '#', '_blank')}
                   className="w-full bg-slate-900 hover:bg-slate-800" 
-                  disabled={module.status !== 'active'}
+                  disabled={module.status !== 'active' || !module.remoteUrl}
                 >
                   {module.status === 'active' ? (
                     <>Abrir Aplicación <ExternalLink className="ml-2 h-4 w-4" /></>

@@ -31,7 +31,6 @@ const MODULE_NAV = [
   { id: "mod_crm", name: "CRM", icon: Briefcase, href: "/modules/crm", allowedRoles: ["ADMIN_OWNER"] },
   { id: "mod_inv", name: "Inventario", icon: Package, href: "/modules/stock", allowedRoles: ["ADMIN_OWNER", "SUPERVISOR"] },
   { id: "mod_fin", name: "Finanzas", icon: PieChart, href: "/modules/finances", allowedRoles: ["ADMIN_OWNER", "SUPERVISOR"] },
-  { id: "9dRWiNsBBLbd1uL3KQk3", name: "T-Modulo 1", icon: ClipboardList, href: "/modules/m1", allowedRoles: ["ADMIN_OWNER", "SUPERVISOR", "OPERATIVE"] },
 ];
 
 const UTILITY_NAV = [
