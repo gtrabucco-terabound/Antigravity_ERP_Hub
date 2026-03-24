@@ -9,6 +9,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useTenant } from "@/context/tenant-context";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { useUser } from "@/firebase/auth/use-user";
 import { useMembership } from "@/firebase/auth/use-membership";
 import { collection, query, where, documentId } from "firebase/firestore";
 import { useRouter } from "next/navigation";
@@ -28,6 +29,7 @@ export default function DashboardPage() {
   }, [db, activeModuleIds]);
 
   const { membership } = useMembership();
+  const { user } = useUser();
   const userRole = membership?.role || "OPERATIVE";
 
   // Mapeo de permisos (ID -> Roles permitidos)
@@ -54,7 +56,7 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <div className="flex flex-col gap-1">
         <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-          Bienvenido de nuevo, {membership?.name?.split(' ')[0] || 'Gobernador'}
+          Bienvenido de nuevo, {user?.displayName?.split(' ')[0] || 'Hola'}
         </h1>
         <p className="text-slate-500 font-medium">Esto es lo que está pasando hoy en {selectedTenant?.name || 'su organización'}.</p>
       </div>

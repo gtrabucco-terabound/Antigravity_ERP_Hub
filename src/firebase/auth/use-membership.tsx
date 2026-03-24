@@ -41,6 +41,12 @@ export function useMembership() {
         const doc = snapshot.docs[0];
         const data = doc.data() as UserMembership;
         if (debugRole) data.role = debugRole as any;
+        
+        // Mapeo seguro en caso de que en la BD se haya tipeado "ADMIN" manualmente
+        if ((data.role as any) === "ADMIN") {
+          data.role = "ADMIN_OWNER";
+        }
+        
         setMembership({ ...data, id: doc.id });
       } else if (debugRole) {
         setMembership({ 
