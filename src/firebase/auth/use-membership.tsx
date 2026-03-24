@@ -31,7 +31,7 @@ export function useMembership() {
 
     setLoading(true);
     const membersRef = collection(db, '_gl_tenants', selectedTenant.id, 'members');
-    const q = query(membersRef, where('uid', '==', user.uid));
+    const q = query(membersRef, where('userId', '==', user.uid));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       // DEBUG OVERRIDE

@@ -75,6 +75,7 @@ export async function createTenantUserAction({
     // 4. Crear Membresía del Usuario en el Tenant (_gl_tenants/{tenantId}/members/{uid})
     await adminFirestore.doc(`_gl_tenants/${tenantId}/members/${uid}`).set({
       uid,
+      userId: uid, // Agregado para soportar estructura manual del sistema
       role,
       modules, // Módulos a los que este usuario tiene acceso explícito
       status: "active",

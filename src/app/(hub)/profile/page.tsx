@@ -11,9 +11,14 @@ import { Separator } from "@/components/ui/separator";
 import { User, Shield, Bell, Globe, Palette, LogOut, Check } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useUser } from "@/firebase/auth/use-user";
+import { getAuth, signOut } from "firebase/auth";
+import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
   const { toast } = useToast();
+  const { user } = useUser();
+  const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = () => {
@@ -59,8 +64,8 @@ export default function ProfilePage() {
             <CardContent className="space-y-6">
               <div className="flex items-center gap-6">
                 <Avatar className="h-20 w-20 ring-4 ring-slate-50">
-                  <AvatarImage src="https://picsum.photos/seed/user/80/80" />
-                  <AvatarFallback>AD</AvatarFallback>
+                  <AvatarImage src={user?.photoURL || `https://ui-avatars.com/api/?name=${user?.displayName || "Usuario"}`} />
+                  <AvatarFallback>{user?.displayName?.charAt(0) || "U"}</AvatarFallback>
                 </Avatar>
                 <div className="space-y-2">
                   <Button variant="outline" size="sm">Cambiar Foto</Button>
@@ -71,11 +76,11 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">Nombre Completo</Label>
-                  <Input id="firstName" defaultValue="Alex Dupont" />
+                  <Input id="firstName" defaultValue={user?.displayName || ""} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Correo del Trabajo</Label>
-                  <Input id="email" defaultValue="alex.dupont@teracorp.com" disabled />
+                  <Input id="email" defaultValue={user?.email || ""} disabled />
                 </div>
               </div>
             </CardContent>
@@ -136,7 +141,11 @@ export default function ProfilePage() {
                   <p className="text-sm font-semibold text-red-900">Cerrar sesión en todos los dispositivos</p>
                   <p className="text-xs text-red-700/70">Desconecte su sesión actual en todas las plataformas.</p>
                 </div>
-                <Button variant="destructive" size="sm" className="gap-2">
+                <Button variant="destructive" size="sm" className="gap-2" onClick={async () => {
+                  const auth = getAuth();
+                  await signOut(auth);
+                  router.push('/login');
+                }}>
                   <LogOut className="h-4 w-4" /> Salir de Todo
                 </Button>
               </div>
