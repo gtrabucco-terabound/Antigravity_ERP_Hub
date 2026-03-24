@@ -19,11 +19,18 @@ import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, limit } from "firebase/firestore";
 import { useEffect } from "react";
 import { useTenant } from "@/context/tenant-context";
+import { useUser } from "@/firebase/auth/use-user";
+import { useMembership } from "@/firebase/auth/use-membership";
+import { getAuth, signOut } from "firebase/auth";
 
 export function Header() {
   const router = useRouter();
   const db = useFirestore();
   const { selectedTenant, setSelectedTenant } = useTenant();
+  const { user } = useUser();
+  const { membership } = useMembership();
+  
+  const canSwitchTenants = membership?.role === "ADMIN_OWNER";
 
   const tenantsQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -59,7 +66,7 @@ export function Header() {
 
       <div className="flex items-center gap-4">
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger asChild disabled={!canSwitchTenants}>
             <Button variant="ghost" className="flex flex-col items-end h-auto py-1 px-2 hover:bg-slate-50">
               {loading ? (
                 <div className="flex items-center gap-2">
@@ -72,7 +79,7 @@ export function Header() {
                     <span className="text-sm font-semibold text-slate-900 leading-none">
                       {selectedTenant?.name || "Seleccionar Cliente"}
                     </span>
-                    <ChevronDown className="h-3 w-3 text-slate-400" />
+                    {canSwitchTenants && <ChevronDown className="h-3 w-3 text-slate-400" />}
                   </div>
                   <span className="text-[10px] text-muted-foreground">
                     ID: {selectedTenant?.tenantId || "---"}
@@ -81,29 +88,31 @@ export function Header() {
               )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-64">
-            <DropdownMenuLabel>Cambiar de Cliente</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {tenants?.map((t: any) => (
-              <DropdownMenuItem 
-                key={t.id} 
-                onClick={() => setSelectedTenant({ 
-                  id: t.id, 
-                  name: t.name, 
-                  tenantId: t.tenantId,
-                  activeModules: t.activeModules || []
-                })}
-                className="flex justify-between items-center"
-              >
-                <span>{t.name}</span>
-                <Badge variant="outline" className="text-[10px] opacity-60">{t.tenantId}</Badge>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
+          {canSwitchTenants && (
+            <DropdownMenuContent align="end" className="w-64">
+              <DropdownMenuLabel>Cambiar de Cliente</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {tenants?.map((t: any) => (
+                <DropdownMenuItem 
+                  key={t.id} 
+                  onClick={() => setSelectedTenant({ 
+                    id: t.id, 
+                    name: t.name, 
+                    tenantId: t.tenantId,
+                    activeModules: t.activeModules || []
+                  })}
+                  className="flex justify-between items-center"
+                >
+                  <span>{t.name}</span>
+                  <Badge variant="outline" className="text-[10px] opacity-60">{t.tenantId}</Badge>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          )}
         </DropdownMenu>
 
         <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 hidden sm:flex">
-          Admin de Cliente
+          {membership?.role === "ADMIN_OWNER" ? "Admin de Cliente" : (membership?.role || "Operativo")}
         </Badge>
         
         <Button variant="ghost" size="icon" className="relative" onClick={() => router.push('/notifications')}>
@@ -115,25 +124,29 @@ export function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-9 w-9 rounded-full">
               <Avatar className="h-9 w-9 border border-slate-100">
-                <AvatarImage src="https://picsum.photos/seed/user/32/32" alt="Usuario" />
-                <AvatarFallback>AD</AvatarFallback>
+                <AvatarImage src={user?.photoURL || `https://ui-avatars.com/api/?name=${user?.displayName || 'Usuario'}`} alt="Usuario" />
+                <AvatarFallback>{user?.displayName?.charAt(0) || 'U'}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">Alex Dupont</p>
-                <p className="text-xs leading-none text-muted-foreground">alex.dupont@teracorp.com</p>
+                <p className="text-sm font-medium leading-none">{user?.displayName || 'Usuario Terabound'}</p>
+                <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push('/profile')}>
+             <DropdownMenuItem onClick={() => router.push('/profile')}>
               <User className="mr-2 h-4 w-4" />
               <span>Ajustes de Perfil</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-600" onClick={() => router.push('/login')}>
+            <DropdownMenuItem className="text-red-600" onClick={async () => {
+              const auth = getAuth();
+              await signOut(auth);
+              router.push('/login');
+            }}>
               Cerrar sesión
             </DropdownMenuItem>
           </DropdownMenuContent>

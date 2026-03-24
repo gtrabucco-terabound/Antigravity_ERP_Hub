@@ -40,17 +40,22 @@ export default function DashboardPage() {
 
   const { data: activeModules, loading: loadingModules } = useCollection(modulesQuery);
   
-  // Filtrado por Rol (RBAC Técnico)
-  const filteredModules = activeModules?.filter(m => 
-    MODULE_PERMISSIONS[m.id]?.includes(userRole)
-  ) || [];
+  // Filtrado por Rol usando module.code si existe, sino lo mostramos como activo
+  const filteredModules = activeModules?.filter(m => {
+    if (!m.code) return true; // Si la BD no tiene "code", mostramos el módulo por default 
+    const allowed = MODULE_PERMISSIONS[m.code];
+    if (!allowed) return true; // Si no hay restricción impuesta por código
+    return allowed.includes(userRole);
+  }) || [];
 
   const unreadCount = MOCK_NOTIFICATIONS.filter(n => !n.read).length;
 
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Bienvenido de nuevo, Alex</h1>
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+          Bienvenido de nuevo, {membership?.name?.split(' ')[0] || 'Gobernador'}
+        </h1>
         <p className="text-slate-500 font-medium">Esto es lo que está pasando hoy en {selectedTenant?.name || 'su organización'}.</p>
       </div>
 

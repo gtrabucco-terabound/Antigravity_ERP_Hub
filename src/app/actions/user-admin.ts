@@ -1,6 +1,6 @@
 "use server"
 
-import { adminAuth, adminFirestore } from "../firebase/admin";
+import { adminAuth, adminFirestore } from "@/firebase/admin";
 import { FieldValue } from "firebase-admin/firestore";
 
 /**

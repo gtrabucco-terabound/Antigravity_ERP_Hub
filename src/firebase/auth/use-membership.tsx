@@ -23,15 +23,15 @@ export function useMembership() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!db || !user?.email || !selectedTenant?.id) {
+    if (!db || !user?.uid || !selectedTenant?.id) {
       setLoading(false);
       setMembership(null);
       return;
     }
 
     setLoading(true);
-    const membersRef = collection(db, 'tenants', selectedTenant.id, 'members');
-    const q = query(membersRef, where('email', '==', user.email));
+    const membersRef = collection(db, '_gl_tenants', selectedTenant.id, 'members');
+    const q = query(membersRef, where('uid', '==', user.uid));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       // DEBUG OVERRIDE
@@ -41,7 +41,7 @@ export function useMembership() {
         const doc = snapshot.docs[0];
         const data = doc.data() as UserMembership;
         if (debugRole) data.role = debugRole as any;
-        setMembership({ id: doc.id, ...data });
+        setMembership({ ...data, id: doc.id });
       } else if (debugRole) {
         setMembership({ 
           id: 'debug', 
@@ -61,7 +61,7 @@ export function useMembership() {
     });
 
     return () => unsubscribe();
-  }, [db, user?.email, selectedTenant?.id]);
+  }, [db, user?.uid, selectedTenant?.id]);
 
   return { membership, loading };
 }
