@@ -33,10 +33,9 @@ export default function DashboardPage() {
   // Mapeo de permisos (ID -> Roles permitidos)
   // Nota: En una fase avanzada esto vendría de Firestore, pero por ahora seguimos la lógica del Sidebar
   const MODULE_PERMISSIONS: Record<string, string[]> = {
-    "mod_crm": ["ADMIN_OWNER"],
+    "mod_crm": ["ADMIN_OWNER", "SUPERVISOR", "OPERATIVE"],
     "mod_inv": ["ADMIN_OWNER", "SUPERVISOR"],
     "mod_fin": ["ADMIN_OWNER", "SUPERVISOR"],
-    "9dRWiNsBBLbd1uL3KQk3": ["ADMIN_OWNER", "SUPERVISOR", "OPERATIVE"]
   };
 
   const { data: activeModules, loading: loadingModules } = useCollection(modulesQuery);
@@ -123,7 +122,7 @@ export default function DashboardPage() {
                 {filteredModules.map((module: any) => (
                   <div 
                     key={module.id} 
-                    onClick={() => router.push(`/view/${module.id}`)}
+                    onClick={() => window.open(module.remoteUrl || '#', '_blank')}
                     className="p-4 rounded-xl border border-slate-100 bg-slate-50 hover:border-primary/20 hover:bg-white transition-all cursor-pointer group"
                   >
                     <div className="flex items-start justify-between">
