@@ -40,6 +40,7 @@ const UTILITY_NAV = [
 ];
 
 const SECONDARY_NAV = [
+  { name: "Equipo", icon: Users, href: "/team", allowedRoles: ["ADMIN_OWNER"] },
   { name: "Configuración", icon: Settings, href: "/profile" },
 ];
 
@@ -105,6 +106,8 @@ export function AppSidebar() {
 
       <div className="px-4 py-6 space-y-1 border-t border-sidebar-border">
         {SECONDARY_NAV.map((item) => {
+          if (item.allowedRoles && !item.allowedRoles.includes(userRole)) return null;
+          
           const isActive = pathname === item.href;
           return (
             <Link
