@@ -21,12 +21,21 @@ if (!admin.apps.length) {
       });
       console.log("Firebase Admin (HUB) inicializado vía Variable de Entorno");
     } else {
-      const serviceAccount = require("../../firebase-admin-sdk.json");
+      // Uso dinamico de fs para evitar que Webpack falle si el archivo no existe en Vercel
+      const fs = require('fs');
+      const path = require('path');
+      const svcPath = path.resolve(process.cwd(), 'firebase-admin-sdk.json');
       
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-      });
-      console.log("Firebase Admin (HUB) inicializado vía Archivo Local");
+      if (fs.existsSync(svcPath)) {
+        const fileContent = fs.readFileSync(svcPath, 'utf8');
+        const serviceAccount = JSON.parse(fileContent);
+        admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount),
+        });
+        console.log("Firebase Admin (HUB) inicializado vía Archivo Local");
+      } else {
+        console.warn("ATENCIÓN: FIREBASE_SERVICE_ACCOUNT vacía y no hay firebase-admin-sdk.json.");
+      }
     }
   } catch (error) {
     console.error("Error al inicializar Firebase Admin (HUB):", error);
