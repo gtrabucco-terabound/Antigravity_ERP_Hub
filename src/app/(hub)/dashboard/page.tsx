@@ -33,21 +33,29 @@ export default function DashboardPage() {
   const userRole = membership?.role || "OPERATIVE";
 
   // Mapeo de permisos (ID -> Roles permitidos)
-  // Nota: En una fase avanzada esto vendría de Firestore, pero por ahora seguimos la lógica del Sidebar
+  // Nota: En una fase avanzada esto vendría de Firestore, pero  // Mapeo de permisos (ID -> Roles permitidos)
+  // Nota: Los roles ejecutivos ("ADMIN", "MANAGER", "IT", "AUDITOR") tienen acceso a todo por defecto en UI
   const MODULE_PERMISSIONS: Record<string, string[]> = {
-    "mod_crm": ["ADMIN_OWNER", "SUPERVISOR", "OPERATIVE"],
-    "mod_inv": ["ADMIN_OWNER", "SUPERVISOR"],
-    "mod_fin": ["ADMIN_OWNER", "SUPERVISOR"],
+    "mod_crm": ["SUPERVISOR", "OPERATIVE", "ADMINISTRATIVE", "AREA_MANAGER"],
+    "mod_inv": ["SUPERVISOR", "OPERATIVE", "AREA_MANAGER"],
+    "mod_fin": ["FINANCE", "ADMINISTRATIVE", "AREA_MANAGER", "SUPERVISOR"],
   };
+
+  const hasFullAccess = ["ADMIN", "MANAGER", "IT", "AUDITOR"].includes(userRole);
 
   const { data: activeModules, loading: loadingModules } = useCollection(modulesQuery);
   
   // Filtrado por Rol usando module.code si existe, sino lo mostramos como activo
   const filteredModules = activeModules?.filter(m => {
     if (!m.code) return true; // Si la BD no tiene "code", mostramos el módulo por default 
-    const allowed = MODULE_PERMISSIONS[m.code];
-    if (!allowed) return true; // Si no hay restricción impuesta por código
-    return allowed.includes(userRole);
+    const allowedRoles = MODULE_PERMISSIONS[m.code];
+    const hasPermission = hasFullAccess || (allowedRoles && allowedRoles.includes(userRole));
+            
+    // Verificamos si este usuario en partícular tiene asignado el módulo explícitamente en su array "modules"
+    const hasUserConfiguredModule = membership?.modules?.includes(m.code);
+    const canSeeModule = hasPermission || hasUserConfiguredModule;
+
+    return canSeeModule;
   }) || [];
 
   const unreadCount = MOCK_NOTIFICATIONS.filter(n => !n.read).length;

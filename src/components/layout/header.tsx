@@ -30,7 +30,7 @@ export function Header() {
   const { user } = useUser();
   const { membership } = useMembership();
   
-  const canSwitchTenants = membership?.role === "ADMIN_OWNER";
+  const canSwitchTenants = membership?.role === "ADMIN";
 
   const tenantsQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -112,7 +112,7 @@ export function Header() {
         </DropdownMenu>
 
         <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 hidden sm:flex">
-          {membership?.role === "ADMIN_OWNER" ? "Admin de Cliente" : (membership?.role || "Operativo")}
+          {membership?.role === "ADMIN" ? "Admin de Cliente" : (membership?.role || "Operativo")}
         </Badge>
         
         <Button variant="ghost" size="icon" className="relative" onClick={() => router.push('/notifications')}>

@@ -45,8 +45,8 @@ export default function TeamPage() {
   
   const tenantId = selectedTenant?.id || "";
 
-  // Seguridad Front-End: Solo ADMIN_OWNER puede ver esta pantalla y crear usuarios
-  const isAdmin = membership?.role === "ADMIN_OWNER";
+  // Seguridad Front-End: ADMIN, MANAGER, IT pueden ver el equipo
+  const canManageTeam = membership?.role && ["ADMIN", "MANAGER", "IT"].includes(membership.role);
 
   // Obtenemos miembros del Tenant
   const membersQuery = useMemoFirebase(() => {
@@ -59,7 +59,7 @@ export default function TeamPage() {
 
   const { data: members, loading } = useCollection(membersQuery);
 
-  if (!isAdmin) {
+  if (!canManageTeam) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8">
         <ShieldAlert className="h-16 w-16 text-red-500/20 mb-4" />
@@ -70,15 +70,27 @@ export default function TeamPage() {
   }
 
   const roleLabels: Record<string, string> = {
-    "ADMIN_OWNER": "Administrador",
+    "ADMIN": "Dueño (Admin)",
+    "MANAGER": "Gerente General",
+    "AREA_MANAGER": "Gerente de Área",
     "SUPERVISOR": "Supervisor",
-    "OPERATIVE": "Operativo"
+    "OPERATIVE": "Operativo / Técnico",
+    "ADMINISTRATIVE": "Administrativo",
+    "FINANCE": "Finanzas",
+    "IT": "Sistemas",
+    "AUDITOR": "Auditor"
   };
 
   const roleColors: Record<string, string> = {
-    "ADMIN_OWNER": "bg-indigo-50 text-indigo-700 border-indigo-200",
+    "ADMIN": "bg-indigo-900 text-indigo-100 border-indigo-900",
+    "MANAGER": "bg-indigo-100 text-indigo-800 border-indigo-300",
+    "AREA_MANAGER": "bg-blue-50 text-blue-700 border-blue-200",
     "SUPERVISOR": "bg-emerald-50 text-emerald-700 border-emerald-200",
-    "OPERATIVE": "bg-slate-100 text-slate-700 border-slate-200"
+    "OPERATIVE": "bg-slate-100 text-slate-700 border-slate-200",
+    "ADMINISTRATIVE": "bg-orange-50 text-orange-700 border-orange-200",
+    "FINANCE": "bg-emerald-100 text-emerald-800 border-emerald-300",
+    "IT": "bg-purple-50 text-purple-700 border-purple-200",
+    "AUDITOR": "bg-yellow-50 text-yellow-800 border-yellow-300"
   };
 
   return (
@@ -143,7 +155,7 @@ export default function TeamPage() {
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={`font-bold ${roleColors[member.role] || roleColors["OPERATIVE"]}`}>
-                      {member.role === "ADMIN_OWNER" && <ShieldCheck className="h-3 w-3 mr-1" />}
+                      {member.role === "ADMIN" && <ShieldCheck className="h-3 w-3 mr-1" />}
                       {roleLabels[member.role] || member.role}
                     </Badge>
                   </TableCell>

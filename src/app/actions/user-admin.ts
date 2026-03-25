@@ -12,7 +12,7 @@ interface CreateUserParams {
   email: string;
   displayName: string;
   tenantId: string;
-  role: "ADMIN_OWNER" | "SUPERVISOR" | "OPERATIVE";
+  role: "ADMIN" | "MANAGER" | "AREA_MANAGER" | "SUPERVISOR" | "OPERATIVE" | "ADMINISTRATIVE" | "FINANCE" | "IT" | "AUDITOR";
   modules?: string[];
 }
 

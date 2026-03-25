@@ -9,7 +9,17 @@ import { collection, query, where, onSnapshot, QuerySnapshot, DocumentData } fro
 interface UserMembership {
   id: string;
   userId: string;
-  role: 'ADMIN_OWNER' | 'SUPERVISOR' | 'OPERATIVE';
+  role: 
+    | "ADMIN"
+    | "MANAGER"
+    | "AREA_MANAGER"
+    | "SUPERVISOR"
+    | "OPERATIVE"
+    | "ADMINISTRATIVE"
+    | "FINANCE"
+    | "IT"
+    | "AUDITOR";
+  modules?: string[];
   status: string;
   email: string;
   name: string;
@@ -44,7 +54,7 @@ export function useMembership() {
         
         // Mapeo seguro en caso de que en la BD se haya tipeado "ADMIN" manualmente
         if ((data.role as any) === "ADMIN") {
-          data.role = "ADMIN_OWNER";
+          data.role = "ADMIN";
         }
         
         setMembership({ ...data, id: doc.id });

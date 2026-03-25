@@ -28,9 +28,9 @@ const CORE_NAV = [
 ];
 
 const MODULE_NAV = [
-  { id: "mod_crm", name: "CRM", icon: Briefcase, href: "/modules/crm", allowedRoles: ["ADMIN_OWNER"] },
-  { id: "mod_inv", name: "Inventario", icon: Package, href: "/modules/stock", allowedRoles: ["ADMIN_OWNER", "SUPERVISOR"] },
-  { id: "mod_fin", name: "Finanzas", icon: PieChart, href: "/modules/finances", allowedRoles: ["ADMIN_OWNER", "SUPERVISOR"] },
+  { id: "mod_crm", name: "CRM", icon: Briefcase, href: "/modules/crm", allowedRoles: ["SUPERVISOR", "OPERATIVE", "ADMINISTRATIVE", "AREA_MANAGER"] },
+  { id: "mod_inv", name: "Inventario", icon: Package, href: "/modules/stock", allowedRoles: ["SUPERVISOR", "OPERATIVE", "AREA_MANAGER"] },
+  { id: "mod_fin", name: "Finanzas", icon: PieChart, href: "/modules/finances", allowedRoles: ["FINANCE", "ADMINISTRATIVE", "AREA_MANAGER", "SUPERVISOR"] },
 ];
 
 const UTILITY_NAV = [
@@ -40,7 +40,7 @@ const UTILITY_NAV = [
 ];
 
 const SECONDARY_NAV = [
-  { name: "Equipo", icon: Users, href: "/team", allowedRoles: ["ADMIN_OWNER"] },
+  { name: "Equipo", icon: Users, href: "/team", allowedRoles: ["ADMIN", "MANAGER", "IT"] },
   { name: "Configuración", icon: Settings, href: "/profile" },
 ];
 
@@ -89,9 +89,12 @@ export function AppSidebar() {
 
         <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-2 px-3 mt-6">Módulos Activos</p>
         {(() => {
-          const filteredModules = MODULE_NAV.filter(m => 
-            activeModules.includes(m.id) && m.allowedRoles.includes(userRole)
-          );
+          const hasFullAccess = ["ADMIN", "MANAGER", "IT", "AUDITOR"].includes(userRole);
+          const filteredModules = MODULE_NAV.filter(m => {
+            const hasPermission = hasFullAccess || m.allowedRoles.includes(userRole);
+            const hasUserConfiguredModule = membership?.modules?.includes(m.id);
+            return activeModules.includes(m.id) && (hasPermission || hasUserConfiguredModule);
+          });
 
           if (filteredModules.length > 0) {
             return filteredModules.map(renderLink);

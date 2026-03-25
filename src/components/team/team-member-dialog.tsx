@@ -34,11 +34,24 @@ import {
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { createTenantUserAction } from "@/app/actions/user-admin"
+import { useTenant } from "@/context/tenant-context"
+import { useFirestore, useCollection } from "@/firebase"
+import { collection } from "firebase/firestore"
 
 const formSchema = z.object({
   displayName: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
   email: z.string().email("Correo electrónico inválido"),
-  role: z.enum(["ADMIN_OWNER", "SUPERVISOR", "OPERATIVE"]),
+  role: z.enum([
+    "ADMIN",
+    "MANAGER",
+    "AREA_MANAGER",
+    "SUPERVISOR",
+    "OPERATIVE",
+    "ADMINISTRATIVE",
+    "FINANCE",
+    "IT",
+    "AUDITOR"
+  ]),
   modules: z.array(z.string()).default([])
 })
 
@@ -48,14 +61,23 @@ interface TeamMemberDialogProps {
   tenantId: string
 }
 
-const AVAILABLE_MODULES = [
-  { id: "mod_crm", name: "CRM" },
-  { id: "mod_inv", name: "Inventario" },
-  { id: "mod_fin", name: "Finanzas" }
-]
-
 export function TeamMemberDialog({ open, onOpenChange, tenantId }: TeamMemberDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const { selectedTenant } = useTenant()
+  const db = useFirestore()
+  
+  // Obtenemos los módulos reales de la base de datos global
+  const { data: allModules } = useCollection(db ? collection(db, "_gl_modules") : null)
+  
+  // Filtramos solo los módulos que el Tenant (empresa) tiene contratados y activos
+  const tenantActiveModules = selectedTenant?.activeModules || []
+  const AVAILABLE_MODULES = (allModules || [])
+    .filter(mod => tenantActiveModules.includes(mod.id))
+    .map(mod => ({
+      id: mod.id,
+      name: mod.name || mod.id
+    }))
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -73,8 +95,9 @@ export function TeamMemberDialog({ open, onOpenChange, tenantId }: TeamMemberDia
     try {
       setIsSubmitting(true)
       
-      // Si el rol es admin, forzamos acceso a todos los módulos (lógica de negocio interna si se desea)
-      const finalModules = values.role === "ADMIN_OWNER" 
+      // Roles ejecutivos/IT fuerzan todos los módulos
+      const hasFullAccess = ["ADMIN", "MANAGER", "IT", "AUDITOR"].includes(values.role);
+      const finalModules = hasFullAccess 
         ? AVAILABLE_MODULES.map(m => m.id) 
         : values.modules;
 
@@ -153,9 +176,15 @@ export function TeamMemberDialog({ open, onOpenChange, tenantId }: TeamMemberDia
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="OPERATIVE">Operativo</SelectItem>
+                      <SelectItem value="OPERATIVE">Operador / Técnico</SelectItem>
+                      <SelectItem value="ADMINISTRATIVE">Administrativo</SelectItem>
                       <SelectItem value="SUPERVISOR">Supervisor</SelectItem>
-                      <SelectItem value="ADMIN_OWNER">Administrador del Workspace</SelectItem>
+                      <SelectItem value="FINANCE">Finanzas / Contabilidad</SelectItem>
+                      <SelectItem value="AREA_MANAGER">Gerente de Área</SelectItem>
+                      <SelectItem value="MANAGER">Gerente General</SelectItem>
+                      <SelectItem value="IT">IT / Sistemas</SelectItem>
+                      <SelectItem value="AUDITOR">Auditor / Consulta</SelectItem>
+                      <SelectItem value="ADMIN">Admin Empresa (Dueño)</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -163,7 +192,7 @@ export function TeamMemberDialog({ open, onOpenChange, tenantId }: TeamMemberDia
               )}
             />
 
-            {selectedRole !== "ADMIN_OWNER" && (
+            {!["ADMIN", "MANAGER", "IT", "AUDITOR"].includes(selectedRole) && (
               <FormField
                 control={form.control}
                 name="modules"
@@ -178,39 +207,43 @@ export function TeamMemberDialog({ open, onOpenChange, tenantId }: TeamMemberDia
                       </FormDescription>
                     </div>
                     <div className="space-y-3 p-4 bg-slate-50 rounded-lg border border-slate-100">
-                      {AVAILABLE_MODULES.map((moduleItem) => (
-                        <FormField
-                          key={moduleItem.id}
-                          control={form.control}
-                          name="modules"
-                          render={({ field }) => {
-                            return (
-                              <FormItem
-                                key={moduleItem.id}
-                                className="flex flex-row items-start space-x-3 space-y-0"
-                              >
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value?.includes(moduleItem.id)}
-                                    onCheckedChange={(checked) => {
-                                      return checked
-                                        ? field.onChange([...field.value, moduleItem.id])
-                                        : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== moduleItem.id
+                      {AVAILABLE_MODULES.length === 0 ? (
+                        <p className="text-sm text-slate-500 italic">No hay módulos contratados en esta empresa.</p>
+                      ) : (
+                        AVAILABLE_MODULES.map((moduleItem) => (
+                          <FormField
+                            key={moduleItem.id}
+                            control={form.control}
+                            name="modules"
+                            render={({ field }) => {
+                              return (
+                                <FormItem
+                                  key={moduleItem.id}
+                                  className="flex flex-row items-start space-x-3 space-y-0"
+                                >
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value?.includes(moduleItem.id)}
+                                      onCheckedChange={(checked) => {
+                                        return checked
+                                          ? field.onChange([...field.value, moduleItem.id])
+                                          : field.onChange(
+                                              field.value?.filter(
+                                                (value) => value !== moduleItem.id
+                                              )
                                             )
-                                          )
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-normal cursor-pointer">
-                                  {moduleItem.name}
-                                </FormLabel>
-                              </FormItem>
-                            )
-                          }}
-                        />
-                      ))}
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="font-normal cursor-pointer">
+                                    {moduleItem.name}
+                                  </FormLabel>
+                                </FormItem>
+                              )
+                            }}
+                          />
+                        ))
+                      )}
                     </div>
                     <FormMessage />
                   </FormItem>
