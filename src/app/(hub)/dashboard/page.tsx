@@ -45,17 +45,19 @@ export default function DashboardPage() {
 
   const { data: activeModules, loading: loadingModules } = useCollection(modulesQuery);
   
-  // Filtrado por Rol usando module.code si existe, sino lo mostramos como activo
+  // Filtrado estricto por Rol y Asignación Explícita
   const filteredModules = activeModules?.filter(m => {
-    if (!m.code) return true; // Si la BD no tiene "code", mostramos el módulo por default 
-    const allowedRoles = MODULE_PERMISSIONS[m.code];
-    const hasPermission = hasFullAccess || (allowedRoles && allowedRoles.includes(userRole));
-            
-    // Verificamos si este usuario en partícular tiene asignado el módulo explícitamente en su array "modules"
-    const hasUserConfiguredModule = membership?.modules?.includes(m.code);
-    const canSeeModule = hasPermission || hasUserConfiguredModule;
+    // 1. Roles ejecutivos tienen acceso a todo el ecosistema de su empresa
+    if (hasFullAccess) return true;
+    
+    // 2. Si el módulo fue asignado explícitamente a este usuario por su ID
+    if (membership?.modules?.includes(m.id)) return true;
+    
+    // 3. Fallback a permisos de rol base asociados por código (Opcional, pero mantenido por si aplica)
+    if (m.code && MODULE_PERMISSIONS[m.code]?.includes(userRole)) return true;
 
-    return canSeeModule;
+    // Si no cumple ninguna, se deniega la visibilidad
+    return false;
   }) || [];
 
   const unreadCount = MOCK_NOTIFICATIONS.filter(n => !n.read).length;
@@ -89,8 +91,8 @@ export default function DashboardPage() {
             <Layers className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activeModuleIds.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">Habilitados para {selectedTenant?.tenantId || '---'}</p>
+            <div className="text-2xl font-bold">{filteredModules.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">Habilitados para tu perfil</p>
           </CardContent>
         </Card>
         <Card className="bg-white border-none shadow-sm">
@@ -100,19 +102,21 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{unreadCount}</div>
-            <p className="text-xs text-orange-600 mt-1 font-medium">Requiere acción</p>
+            <p className="text-xs text-orange-600 mt-1 font-medium">Bandeja personal</p>
           </CardContent>
         </Card>
-        <Card className="bg-white border-none shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-semibold text-slate-500">Usuarios Totales</CardTitle>
-            <UserCheck className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">42</div>
-            <p className="text-xs text-muted-foreground mt-1">5 actualmente en línea</p>
-          </CardContent>
-        </Card>
+        {hasFullAccess && (
+          <Card className="bg-white border-none shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-semibold text-slate-500">Usuarios Totales</CardTitle>
+              <UserCheck className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">42</div>
+              <p className="text-xs text-muted-foreground mt-1">5 actualmente en línea</p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

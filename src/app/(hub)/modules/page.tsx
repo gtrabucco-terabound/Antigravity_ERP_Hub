@@ -7,6 +7,8 @@ import { ExternalLink, Layers, Search, Filter, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useTenant } from "@/context/tenant-context";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { useUser } from "@/firebase/auth/use-user";
+import { useMembership } from "@/firebase/auth/use-membership";
 import { collection, query, where, documentId } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
@@ -23,6 +25,24 @@ export default function ModulesPage() {
   }, [db, activeModuleIds]);
 
   const { data: activeModules, loading: loadingModules } = useCollection(modulesQuery);
+
+  const { membership } = useMembership();
+  const { user } = useUser();
+  const userRole = membership?.role || "OPERATIVE";
+  const hasFullAccess = ["ADMIN", "MANAGER", "IT", "AUDITOR"].includes(userRole);
+
+  const MODULE_PERMISSIONS: Record<string, string[]> = {
+    "mod_crm": ["SUPERVISOR", "OPERATIVE", "ADMINISTRATIVE", "AREA_MANAGER"],
+    "mod_inv": ["SUPERVISOR", "OPERATIVE", "AREA_MANAGER"],
+    "mod_fin": ["FINANCE", "ADMINISTRATIVE", "AREA_MANAGER", "SUPERVISOR"],
+  };
+
+  const filteredModules = activeModules?.filter(m => {
+    if (hasFullAccess) return true;
+    if (membership?.modules?.includes(m.id)) return true;
+    if (m.code && MODULE_PERMISSIONS[m.code]?.includes(userRole)) return true;
+    return false;
+  }) || [];
 
   return (
     <div className="space-y-6">
@@ -45,9 +65,9 @@ export default function ModulesPage() {
           <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
           <p className="text-slate-500 text-sm">Cargando catálogo de módulos...</p>
         </div>
-      ) : activeModules && activeModules.length > 0 ? (
+      ) : filteredModules && filteredModules.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {activeModules.map((module: any) => (
+          {filteredModules.map((module: any) => (
             <Card key={module.id} className="flex flex-col border-none shadow-sm hover:shadow-md transition-shadow group">
               <CardHeader className="flex-1">
                 <div className="flex items-start justify-between mb-4">
