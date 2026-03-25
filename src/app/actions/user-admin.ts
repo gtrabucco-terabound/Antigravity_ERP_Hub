@@ -14,6 +14,7 @@ interface CreateUserParams {
   tenantId: string;
   role: "ADMIN" | "MANAGER" | "AREA_MANAGER" | "SUPERVISOR" | "OPERATIVE" | "ADMINISTRATIVE" | "FINANCE" | "IT" | "AUDITOR";
   modules?: string[];
+  tempPassword?: string;
 }
 
 export async function createTenantUserAction({
@@ -21,7 +22,8 @@ export async function createTenantUserAction({
   displayName,
   tenantId,
   role,
-  modules = []
+  modules = [],
+  tempPassword
 }: CreateUserParams) {
   try {
     const adminAuth = getAdminAuth();
@@ -29,15 +31,14 @@ export async function createTenantUserAction({
 
     if (!tenantId) throw new Error("tenantId es requerido");
 
-    // 1. Crear usuario en Firebase Auth (Generar un password seguro aleatorio)
-    // El usuario debe restablecer su contraseña luego mediante el link de su correo.
-    const randomPassword = Math.random().toString(36).slice(-12) + "A1!"; 
+    // 1. Crear usuario en Firebase Auth usando tempPassword si existe, si no generar uno seguro legible y fácil
+    const generatedPassword = tempPassword || ("Tera" + Math.floor(1000 + Math.random() * 9000) + "!");
     
     let userRecord;
     try {
       userRecord = await adminAuth.createUser({
         email,
-        password: randomPassword,
+        password: generatedPassword,
         displayName,
       });
     } catch (authError: any) {
@@ -72,7 +73,13 @@ export async function createTenantUserAction({
       photoURL: userRecord.photoURL || null,
       active: true,
       lastLoginAt: null,
-      updatedAt: FieldValue.serverTimestamp()
+      updatedAt: FieldValue.serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
+      role: "operative", 
+      status: "pending_activation",
+      tempPassword: generatedPassword,
+      mustChangePassword: true,
+      tenantId: tenantId
     }, { merge: true });
 
     // 4. Crear Membresía del Usuario en el Tenant (_gl_tenants/{tenantId}/members/{uid})
@@ -87,13 +94,13 @@ export async function createTenantUserAction({
 
     // Enviar link de restablecimiento de contraseña (Opcional, pero recomendado en flujos corporativos)
     const resetLink = await adminAuth.generatePasswordResetLink(email);
-    console.log(`[USER_CREATED] Email: ${email}, Reset Link: ${resetLink}`);
-    // Aquí idealmente integrar un servicio de Email (Sendgrid/Resend) enviando resetLink.
+    console.log(`[USER_CREATED] Email: ${email}, TempPass: ${generatedPassword}, Reset Link: ${resetLink}`);
 
     return { 
       success: true, 
       uid,
-      message: "Usuario creado y vinculado exitosamente. Se ha enviado un correo para restablecer contraseña.",
+      message: `El usuario fue creado con la contraseña temporal: ${generatedPassword}`,
+      tempPassword: generatedPassword,
       resetLink // Solo para depuración o si el Admin quiere enviarlo manual
     };
   } catch (error: any) {

@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/firebase";
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from "firebase/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -63,6 +63,34 @@ export default function LoginPage() {
     }
   };
 
+  const handleResetPassword = async () => {
+    if (!email) {
+      toast({
+        title: "Correo requerido",
+        description: "Ingrese su correo electrónico en el campo superior para enviarle el link de recuperación.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, email);
+      toast({
+        title: "Correo enviado",
+        description: `Se han enviado instrucciones a ${email} para restablecer su contraseña.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error de recuperación",
+        description: error.code === 'auth/user-not-found' ? "No existe usuario registrado con este correo." : "No se pudo enviar el correo de recuperación.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
       <div className="w-full max-w-md space-y-8">
@@ -99,7 +127,7 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Contraseña</Label>
-                  <button type="button" className="text-xs text-primary hover:underline">¿Olvidó su contraseña?</button>
+                  <button type="button" onClick={handleResetPassword} disabled={isLoading} className="text-xs text-primary hover:underline">¿Olvidó su contraseña?</button>
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />

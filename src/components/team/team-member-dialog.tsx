@@ -4,7 +4,8 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { Loader2, ShieldCheck, Briefcase } from "lucide-react"
+import { Loader2, ShieldCheck, Briefcase, Key } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -51,9 +52,9 @@ const formSchema = z.object({
     "ADMINISTRATIVE",
     "FINANCE",
     "IT",
-    "AUDITOR"
   ]),
-  modules: z.array(z.string()).default([])
+  modules: z.array(z.string()).default([]),
+  tempPassword: z.string().optional()
 })
 
 interface TeamMemberDialogProps {
@@ -67,6 +68,7 @@ export function TeamMemberDialog({ open, onOpenChange, tenantId, memberToEdit }:
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { selectedTenant } = useTenant()
   const db = useFirestore()
+  const { toast } = useToast()
   
   // Obtenemos los módulos reales de la base de datos global
   const { data: allModules } = useCollection(db ? collection(db, "_gl_modules") : null)
@@ -87,7 +89,8 @@ export function TeamMemberDialog({ open, onOpenChange, tenantId, memberToEdit }:
       displayName: "",
       email: "",
       role: "OPERATIVE",
-      modules: []
+      modules: [],
+      tempPassword: ""
     },
   })
 
@@ -97,7 +100,8 @@ export function TeamMemberDialog({ open, onOpenChange, tenantId, memberToEdit }:
         displayName: memberToEdit.name || memberToEdit.displayName || "",
         email: memberToEdit.email || "",
         role: memberToEdit.role || "OPERATIVE",
-        modules: memberToEdit.modules || []
+        modules: memberToEdit.modules || [],
+        tempPassword: ""
       })
     } else if (!open) {
       form.reset()
@@ -131,11 +135,16 @@ export function TeamMemberDialog({ open, onOpenChange, tenantId, memberToEdit }:
           displayName: values.displayName.trim(),
           tenantId,
           role: values.role,
-          modules: finalModules
+          modules: finalModules,
+          tempPassword: values.tempPassword ? values.tempPassword.trim() : undefined
         })
       }
 
       if (result.success) {
+        toast({
+          title: isEditMode ? "Tus cambios fueron guardados" : "Usuario Invito con Éxito",
+          description: result.message,
+        })
         form.reset()
         onOpenChange(false)
       } else {
@@ -189,6 +198,27 @@ export function TeamMemberDialog({ open, onOpenChange, tenantId, memberToEdit }:
                 </FormItem>
               )}
             />
+
+            {!isEditMode && (
+              <FormField
+                control={form.control}
+                name="tempPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Key className="h-4 w-4" /> Contraseña Temporal (Opcional)
+                    </FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder="Autogenerada si se deja vacío" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Esta clave se guardará en la base de datos y se mostrará al finalizar.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}
