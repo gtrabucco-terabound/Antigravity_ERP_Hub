@@ -33,10 +33,11 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { createTenantUserAction } from "@/app/actions/user-admin"
+import { createTenantUserAction, updateTenantUserAction } from "@/app/actions/user-admin"
 import { useTenant } from "@/context/tenant-context"
 import { useFirestore, useCollection } from "@/firebase"
 import { collection } from "firebase/firestore"
+import { useEffect } from "react"
 
 const formSchema = z.object({
   displayName: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -59,9 +60,10 @@ interface TeamMemberDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   tenantId: string
+  memberToEdit?: any
 }
 
-export function TeamMemberDialog({ open, onOpenChange, tenantId }: TeamMemberDialogProps) {
+export function TeamMemberDialog({ open, onOpenChange, tenantId, memberToEdit }: TeamMemberDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { selectedTenant } = useTenant()
   const db = useFirestore()
@@ -89,7 +91,21 @@ export function TeamMemberDialog({ open, onOpenChange, tenantId }: TeamMemberDia
     },
   })
 
+  useEffect(() => {
+    if (memberToEdit && open) {
+      form.reset({
+        displayName: memberToEdit.name || memberToEdit.displayName || "",
+        email: memberToEdit.email || "",
+        role: memberToEdit.role || "OPERATIVE",
+        modules: memberToEdit.modules || []
+      })
+    } else if (!open) {
+      form.reset()
+    }
+  }, [memberToEdit, open, form])
+
   const selectedRole = form.watch("role")
+  const isEditMode = !!memberToEdit;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -101,20 +117,29 @@ export function TeamMemberDialog({ open, onOpenChange, tenantId }: TeamMemberDia
         ? AVAILABLE_MODULES.map(m => m.id) 
         : values.modules;
 
-      const result = await createTenantUserAction({
-        email: values.email.trim(),
-        displayName: values.displayName.trim(),
-        tenantId,
-        role: values.role,
-        modules: finalModules
-      })
+      let result;
+      if (isEditMode) {
+        result = await updateTenantUserAction({
+          uid: memberToEdit.id,
+          tenantId,
+          role: values.role,
+          modules: finalModules
+        })
+      } else {
+        result = await createTenantUserAction({
+          email: values.email.trim(),
+          displayName: values.displayName.trim(),
+          tenantId,
+          role: values.role,
+          modules: finalModules
+        })
+      }
 
       if (result.success) {
-        // En una app real, mostraríamos un Toast de éxito
         form.reset()
         onOpenChange(false)
       } else {
-        form.setError("root", { type: "server", message: result.error || "Ocurrió un error al invitar al usuario." })
+        form.setError("root", { type: "server", message: result.error || "Ocurrió un error al procesar el usuario." })
       }
     } catch (error: any) {
       form.setError("root", { type: "server", message: "Error interno del servidor." })
@@ -127,9 +152,11 @@ export function TeamMemberDialog({ open, onOpenChange, tenantId }: TeamMemberDia
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Invitar Miembro al Equipo</DialogTitle>
+          <DialogTitle>{isEditMode ? "Modificar Miembro" : "Invitar Miembro al Equipo"}</DialogTitle>
           <DialogDescription>
-            Agregue un nuevo usuario a este Workspace. Recibirá un correo para configurar su contraseña.
+            {isEditMode 
+              ? "Modifique los roles y acceso a módulos de este usuario." 
+              : "Agregue un nuevo usuario a este Workspace. Recibirá un correo para configurar su contraseña."}
           </DialogDescription>
         </DialogHeader>
         
@@ -156,7 +183,7 @@ export function TeamMemberDialog({ open, onOpenChange, tenantId }: TeamMemberDia
                 <FormItem>
                   <FormLabel>Correo Electrónico (Email)</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="juan@ejemplo.com" {...field} />
+                    <Input type="email" placeholder="juan@ejemplo.com" disabled={isEditMode} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -263,7 +290,7 @@ export function TeamMemberDialog({ open, onOpenChange, tenantId }: TeamMemberDia
               </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isSubmitting ? "Enviando..." : "Invitar y Crear Acceso"}
+                {isSubmitting ? "Enviando..." : (isEditMode ? "Guardar Cambios" : "Invitar y Crear Acceso")}
               </Button>
             </DialogFooter>
           </form>

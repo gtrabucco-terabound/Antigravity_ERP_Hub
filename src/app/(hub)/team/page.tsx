@@ -35,6 +35,8 @@ import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy } from "firebase/firestore";
 import { useMembership } from "@/firebase/auth/use-membership";
 import { TeamMemberDialog } from "@/components/team/team-member-dialog";
+import { updateTenantUserAction } from "@/app/actions/user-admin";
+import { Loader2 } from "lucide-react";
 
 export default function TeamPage() {
   const db = useFirestore();
@@ -42,6 +44,8 @@ export default function TeamPage() {
   const { membership } = useMembership();
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [memberToEdit, setMemberToEdit] = useState<any>(null);
+  const [processingId, setProcessingId] = useState<string | null>(null);
   
   const tenantId = selectedTenant?.id || "";
 
@@ -93,6 +97,32 @@ export default function TeamPage() {
     "AUDITOR": "bg-yellow-50 text-yellow-800 border-yellow-300"
   };
 
+  const handleCreateMember = () => {
+    setMemberToEdit(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleEditMember = (member: any) => {
+    setMemberToEdit(member);
+    setIsDialogOpen(true);
+  };
+
+  const handleSuspendMember = async (memberId: string, currentStatus: string) => {
+    try {
+      setProcessingId(memberId);
+      const newStatus = currentStatus === "active" ? "suspended" : "active";
+      await updateTenantUserAction({
+        uid: memberId,
+        tenantId,
+        status: newStatus
+      });
+    } catch (error) {
+      console.error("Error toggling member status:", error);
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -101,13 +131,18 @@ export default function TeamPage() {
           <p className="text-slate-500 font-medium">Gestione los usuarios de su workspace y sus permisos por módulo.</p>
         </div>
         <div className="flex gap-2">
-          <Button className="gap-2" onClick={() => setIsDialogOpen(true)}>
+          <Button className="gap-2" onClick={handleCreateMember}>
             <UserPlus className="h-4 w-4" /> Invitar Miembro
           </Button>
         </div>
       </div>
 
-      <TeamMemberDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} tenantId={tenantId} />
+      <TeamMemberDialog 
+        open={isDialogOpen} 
+        onOpenChange={setIsDialogOpen} 
+        tenantId={tenantId} 
+        memberToEdit={memberToEdit}
+      />
 
       <Card className="border-none shadow-sm">
         <CardContent className="p-4 flex flex-col md:flex-row gap-4">
@@ -187,10 +222,19 @@ export default function TeamPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>Modificar Rol</DropdownMenuItem>
-                        <DropdownMenuItem>Asignar Módulos</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEditMember(member)}>Modificar Permisos</DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600">Suspender Acceso</DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className={member.status === 'active' ? "text-red-600" : "text-emerald-600"}
+                          onClick={() => handleSuspendMember(member.id, member.status || 'active')}
+                          disabled={processingId === member.id}
+                        >
+                          {processingId === member.id ? (
+                            <><Loader2 className="h-3 w-3 mr-2 animate-spin" /> Procesando...</>
+                          ) : (
+                            member.status === 'active' ? "¿Suspender Acceso?" : "Activar Acceso"
+                          )}
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

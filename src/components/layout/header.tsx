@@ -30,7 +30,10 @@ export function Header() {
   const { user } = useUser();
   const { membership } = useMembership();
   
-  const canSwitchTenants = membership?.role === "ADMIN";
+  // Solo Super Admins globales pueden saltar de Tenant
+  // Configurarlo en Vercel o en el archivo .env.local como NEXT_PUBLIC_SUPER_ADMIN_EMAILS=super@terabound.com
+  const superAdminEmails = (process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAILS || "admin@terabound.com").split(',');
+  const canSwitchTenants = superAdminEmails.includes(user?.email || "");
 
   const tenantsQuery = useMemoFirebase(() => {
     if (!db) return null;

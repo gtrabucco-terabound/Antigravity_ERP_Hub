@@ -98,3 +98,55 @@ export async function createTenantUserAction({
     return { success: false, error: error.message };
   }
 }
+
+interface UpdateUserParams {
+  uid: string;
+  tenantId: string;
+  role?: string;
+  modules?: string[];
+  status?: "active" | "suspended";
+}
+
+export async function updateTenantUserAction({
+  uid,
+  tenantId,
+  role,
+  modules,
+  status
+}: UpdateUserParams) {
+  try {
+    if (!tenantId || !uid) throw new Error("Faltan identificadores (tenantId o uid)");
+
+    const updateData: any = {
+      updatedAt: FieldValue.serverTimestamp()
+    };
+
+    if (role !== undefined) updateData.role = role;
+    if (modules !== undefined) updateData.modules = modules;
+    if (status !== undefined) updateData.status = status;
+
+    // Actualizar documento en Firestore
+    await adminFirestore.doc(`_gl_tenants/${tenantId}/members/${uid}`).update(updateData);
+
+    // Si se cambió el rol, actualizar Custom Claims
+    if (role !== undefined) {
+      const userRecord = await adminAuth.getUser(uid);
+      const currentClaims = userRecord.customClaims || {};
+      const tenantRoles = currentClaims.tenantRoles || {};
+      
+      await adminAuth.setCustomUserClaims(uid, {
+        ...currentClaims,
+        tenantRoles: {
+          ...tenantRoles,
+          [tenantId]: role
+        }
+      });
+    }
+
+    return { success: true, message: "Usuario actualizado exitosamente." };
+  } catch (error: any) {
+    console.error("Error en updateTenantUserAction:", error);
+    return { success: false, error: error.message };
+  }
+}
+
