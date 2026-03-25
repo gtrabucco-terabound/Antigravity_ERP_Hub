@@ -1,6 +1,6 @@
 "use server"
 
-import { adminAuth, adminFirestore } from "@/firebase/admin";
+import { getAdminAuth, getAdminFirestore } from "@/firebase/admin";
 import { FieldValue } from "firebase-admin/firestore";
 
 /**
@@ -24,6 +24,9 @@ export async function createTenantUserAction({
   modules = []
 }: CreateUserParams) {
   try {
+    const adminAuth = getAdminAuth();
+    const adminFirestore = getAdminFirestore();
+
     if (!tenantId) throw new Error("tenantId es requerido");
 
     // 1. Crear usuario en Firebase Auth (Generar un password seguro aleatorio)
@@ -115,6 +118,9 @@ export async function updateTenantUserAction({
   status
 }: UpdateUserParams) {
   try {
+    const adminAuth = getAdminAuth();
+    const adminFirestore = getAdminFirestore();
+
     if (!tenantId || !uid) throw new Error("Faltan identificadores (tenantId o uid)");
 
     const updateData: any = {
